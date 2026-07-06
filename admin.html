@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản trị — TimXeDien.com</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+  :root{
+    --green:#10b981;--green-d:#059669;--ink:#07150f;--deep:#0a2419;
+    --mist:#f3faf6;--line:#e0ece5;--mut:#5c7268;--red:#e14d4d;--amber:#f5a623;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--mist);color:#182720;line-height:1.6;font-size:15px}
+  a{color:inherit}
+  button,input,select,textarea{font-family:inherit;font-size:14px}
+  .wrap{max-width:1080px;margin:0 auto;padding:18px 16px 60px}
+
+  /* Thanh đầu */
+  .topbar{background:var(--deep);color:#eafff5;position:sticky;top:0;z-index:50}
+  .topbar .inner{max-width:1080px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .brand{font-weight:800;font-size:17px}
+  .brand span{color:#7ef0bd}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+  .tabs button{
+    background:rgba(255,255,255,.08);color:#bfe8d5;border:none;border-radius:9px;
+    padding:8px 14px;font-weight:600;cursor:pointer;font-size:13.5px;
+  }
+  .tabs button.active{background:var(--green);color:#fff}
+  .tabs button.exit{background:transparent;color:#8fbfa8}
+
+  /* Chung */
+  h2{font-size:19px;margin:22px 0 12px;color:var(--ink)}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0;align-items:center}
+  .chip{background:#fff;border:1.5px solid var(--line);color:var(--mut);border-radius:100px;padding:7px 15px;font-weight:600;font-size:13px;cursor:pointer}
+  .chip.active{background:var(--ink);color:#7ef0bd;border-color:var(--ink)}
+  .inp{padding:9px 14px;border:1.5px solid var(--line);border-radius:10px;background:#fff;min-width:210px}
+  .btn{padding:9px 16px;border:none;border-radius:10px;background:var(--green);color:#fff;font-weight:600;cursor:pointer}
+  .btn.ghost{background:#fff;color:var(--mut);border:1.5px solid var(--line)}
+  .btn.danger{background:var(--red)}
+  .btn.sm{padding:7px 12px;font-size:13px}
+  .btn:disabled{opacity:.6;cursor:not-allowed}
+
+  /* Thẻ thống kê */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:16px 0}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;cursor:pointer;transition:.15s}
+  .stat:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(7,40,26,.1)}
+  .stat b{display:block;font-size:26px;color:var(--green-d)}
+  .stat span{font-size:12.5px;color:var(--mut)}
+  .stat.warn b{color:var(--amber)}
+  .stat.info b{color:#0369a1}
+
+  /* Thẻ đơn/lead */
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:12px}
+  .card .top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+  .card b.name{font-size:15.5px}
+  .code{font-weight:800;letter-spacing:1px;color:var(--ink)}
+  .pill{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.5px;padding:4px 12px;border-radius:100px;color:#fff}
+  .meta{font-size:13px;color:var(--mut);margin:4px 0}
+  .msg{font-size:13.5px;background:var(--mist);border:1px solid var(--line);border-radius:10px;padding:9px 13px;margin:8px 0;white-space:pre-wrap}
+  .msg.note{background:#fffbeb;border-color:#fde68a}
+  .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+  .acts a{display:inline-block;padding:7px 13px;border-radius:9px;background:var(--ink);color:#7ef0bd;font-size:13px;font-weight:600;text-decoration:none}
+  .acts select{padding:7px 10px;border:1.5px solid var(--line);border-radius:9px;font-weight:600}
+  .empty{background:#fff;border:1.5px dashed var(--line);border-radius:14px;padding:38px 20px;text-align:center;color:var(--mut)}
+  .banner{background:#fee2e2;border:1px solid #fecaca;color:#991b1b;border-radius:12px;padding:12px 16px;margin:14px 0;font-size:14px;display:none}
+  .guide{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;font-size:14px}
+  .guide ol{margin:8px 0 0 20px}
+  .guide li{margin:4px 0}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media (max-width:860px){.two-col{grid-template-columns:1fr}}
+  .mini-list .card{padding:12px 15px;margin-bottom:8px}
+
+  /* Đăng nhập */
+  .login{max-width:420px;margin:80px auto;background:#fff;border:1px solid var(--line);border-radius:18px;padding:34px;box-shadow:0 20px 50px rgba(7,40,26,.12)}
+  .login h1{font-size:20px;margin-bottom:6px}
+  .login p{font-size:13.5px;color:var(--mut);margin-bottom:18px}
+  .login input{width:100%;margin-bottom:12px;padding:12px 14px;border:1.5px solid var(--line);border-radius:11px}
+  .login .btn{width:100%;padding:12px}
+  .login .err{color:var(--red);font-size:13px;margin-top:10px;text-align:center}
+</style>
+</head>
+<body>
+
+<!-- ===== Đăng nhập ===== -->
+<div class="login" id="loginBox">
+  <h1>⚡ Tim<span style="color:var(--green-d)">XeDien</span> — Quản trị</h1>
+  <p>Nhập mật khẩu quản trị (biến môi trường <b>ADMIN_KEY</b> trên Vercel). Trang này chỉ hoạt động khi website đã deploy.</p>
+  <input type="password" id="adminKey" placeholder="Mật khẩu quản trị" autofocus>
+  <button class="btn" id="loginBtn">Đăng nhập</button>
+  <div class="err" id="loginErr"></div>
+</div>
+
+<!-- ===== Ứng dụng ===== -->
+<div id="app" style="display:none">
+  <div class="topbar">
+    <div class="inner">
+      <div class="brand">⚡ Tim<span>XeDien</span> Admin</div>
+      <div class="tabs" id="tabs">
+        <button data-tab="dash" class="active">📊 Tổng quan</button>
+        <button data-tab="orders">🚗 Đơn thuê xe <span id="badgeOrders"></span></button>
+        <button data-tab="leads">💬 Tư vấn <span id="badgeLeads"></span></button>
+        <button data-tab="users">👥 Khách hàng</button>
+        <button class="exit" id="logoutBtn">Thoát</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="banner" id="banner"></div>
+
+    <!-- ===== TAB: Tổng quan ===== -->
+    <div id="tab-dash">
+      <div class="bar" style="justify-content:space-between">
+        <h2 style="margin:0">Hôm nay cần làm gì?</h2>
+        <button class="btn ghost" id="reloadAll">↻ Tải lại dữ liệu</button>
+      </div>
+      <div class="stats" id="dashStats"></div>
+      <div class="two-col">
+        <div>
+          <h2>🚗 Đơn thuê mới nhất</h2>
+          <div class="mini-list" id="dashOrders"></div>
+        </div>
+        <div>
+          <h2>💬 Tư vấn mới nhất</h2>
+          <div class="mini-list" id="dashLeads"></div>
+        </div>
+      </div>
+      <h2>📖 Quy trình xử lý đơn (gợi ý)</h2>
+      <div class="guide">
+        Mỗi đơn thuê đi qua các bước — khách nhìn thấy đúng trạng thái này trong tài khoản của họ:
+        <ol>
+          <li><b>🕐 Chờ xác nhận</b> → gọi khách trong 15 phút, chốt xe + cọc giữ chỗ → chuyển <b>✅ Đã xác nhận</b></li>
+          <li>Trước giờ hẹn: chuẩn bị xe, sạc đầy → khi xuất phát giao xe chuyển <b>🚚 Đang giao xe</b></li>
+          <li>Khách ký nhận xe → chuyển <b>🚗 Đang thuê</b></li>
+          <li>Nhận lại xe, kiểm tra, hoàn cọc → chuyển <b>🏁 Hoàn tất</b></li>
+          <li>Khách không thuê nữa → <b>✖️ Đã hủy</b> (nên ghi chú lý do)</li>
+        </ol>
+        <p style="margin-top:10px;color:var(--mut);font-size:13px">💡 Dùng ô "Ghi chú gửi khách" trong từng đơn để nhắn khách (VD: "Xe giao 8h sáng mai, tài xế Hùng 090x") — khách thấy ngay trong trang tài khoản.</p>
+      </div>
+    </div>
+
+    <!-- ===== TAB: Đơn thuê xe ===== -->
+    <div id="tab-orders" style="display:none">
+      <div class="bar" style="justify-content:space-between">
+        <h2 style="margin:0">Đơn thuê xe</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn ghost" id="csvOrders">⬇ Xuất Excel (CSV)</button>
+          <button class="btn ghost" id="reloadOrders">↻ Tải lại</button>
+        </div>
+      </div>
+      <div class="bar" id="orderChips"></div>
+      <div class="bar">
+        <input class="inp" id="orderSearch" placeholder="Tìm theo tên, SĐT, mã đơn, xe...">
+      </div>
+      <div id="orderList"><div class="empty">Đang tải...</div></div>
+    </div>
+
+    <!-- ===== TAB: Tư vấn ===== -->
+    <div id="tab-leads" style="display:none">
+      <div class="bar" style="justify-content:space-between">
+        <h2 style="margin:0">Yêu cầu tư vấn (thuê dài hạn, xe cũ, phụ kiện...)</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn ghost" id="csvLeads">⬇ Xuất Excel (CSV)</button>
+          <button class="btn ghost" id="reloadLeads">↻ Tải lại</button>
+        </div>
+      </div>
+      <div class="bar" id="leadChips"></div>
+      <div class="bar">
+        <input class="inp" id="leadSearch" placeholder="Tìm theo tên, SĐT, chủ đề...">
+      </div>
+      <div id="leadList"><div class="empty">Đang tải...</div></div>
+    </div>
+
+    <!-- ===== TAB: Khách hàng ===== -->
+    <div id="tab-users" style="display:none">
+      <div class="bar" style="justify-content:space-between">
+        <h2 style="margin:0">Khách hàng có tài khoản</h2>
+        <button class="btn ghost" id="reloadUsers">↻ Tải lại</button>
+      </div>
+      <div class="bar">
+        <input class="inp" id="userSearch" placeholder="Tìm theo tên, SĐT...">
+      </div>
+      <div id="userList"><div class="empty">Đang tải...</div></div>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script>
+(function () {
+  "use strict";
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => Array.from(document.querySelectorAll(s));
+  const fmt = (n) => Math.round(Number(n) || 0).toLocaleString("vi-VN") + "đ";
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const fmtTime = (iso) => iso ? new Date(iso).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" }) : "";
+  const digits = (p) => String(p || "").replace(/\D/g, "");
+
+  const LEAD_ST = {
+    new: { label: "MỚI", color: "#0369a1" },
+    contacted: { label: "ĐÃ LIÊN HỆ", color: "#b45309" },
+    closed: { label: "HOÀN TẤT", color: "#15803d" }
+  };
+
+  let KEY = sessionStorage.getItem("txd_admin_key") || "";
+  let ORDERS = [], LEADS = [], USERS = [];
+  let orderFilter = "all", leadFilter = "all";
+
+  function banner(msg) {
+    const b = $("#banner");
+    b.textContent = msg || "";
+    b.style.display = msg ? "" : "none";
+  }
+
+  async function api(path, method, body) {
+    const r = await fetch(path + (method === "GET" ? (path.includes("?") ? "&" : "?") + "key=" + encodeURIComponent(KEY) : ""), {
+      method: method || "GET",
+      headers: { "Content-Type": "application/json", "x-admin-key": KEY },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const data = await r.json().catch(() => ({}));
+    return { ok: r.ok, status: r.status, data };
+  }
+
+  // ================= NẠP DỮ LIỆU =================
+  async function loadAll(silent) {
+    if (!silent) banner("");
+    try {
+      const [o, l, u] = await Promise.all([
+        api("/api/orders", "GET"),
+        api("/api/leads", "GET"),
+        api("/api/users", "GET")
+      ]);
+      if (o.status === 401 || l.status === 401) {
+        sessionStorage.removeItem("txd_admin_key");
+        showLogin("Sai mật khẩu quản trị hoặc phiên hết hạn.");
+        return false;
+      }
+      ORDERS = (o.data && o.data.orders) || [];
+      LEADS = (l.data && l.data.leads) || [];
+      USERS = (u.data && u.data.users) || [];
+      renderAll();
+      return true;
+    } catch (e) {
+      banner("⚠️ Không gọi được API — trang quản trị chỉ hoạt động khi website đã deploy lên Vercel (không chạy được từ file trên máy).");
+      renderAll();
+      return true;
+    }
+  }
+
+  function renderAll() {
+    renderDash();
+    renderOrders();
+    renderLeads();
+    renderUsers();
+    const newOrders = ORDERS.filter((x) => x.status === "new").length;
+    const newLeads = LEADS.filter((x) => x.status === "new").length;
+    $("#badgeOrders").textContent = newOrders ? `(${newOrders})` : "";
+    $("#badgeLeads").textContent = newLeads ? `(${newLeads})` : "";
+  }
+
+  // ================= TỔNG QUAN =================
+  function renderDash() {
+    const now = new Date();
+    const thisMonth = (iso) => {
+      const d = new Date(iso);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    };
+    const newO = ORDERS.filter((o) => o.status === "new").length;
+    const renting = ORDERS.filter((o) => o.status === "renting" || o.status === "delivering").length;
+    const revenue = ORDERS.filter((o) => o.status !== "cancelled" && o.createdAt && thisMonth(o.createdAt))
+      .reduce((s, o) => s + (Number(o.total) || 0), 0);
+    const newL = LEADS.filter((l) => l.status === "new").length;
+
+    $("#dashStats").innerHTML = `
+      <div class="stat warn" data-go="orders"><b>${newO}</b><span>🕐 Đơn mới chờ gọi khách</span></div>
+      <div class="stat" data-go="orders"><b>${renting}</b><span>🚗 Xe đang giao / đang thuê</span></div>
+      <div class="stat" data-go="orders"><b>${fmt(revenue)}</b><span>💰 Doanh thu tạm tính tháng ${now.getMonth() + 1}</span></div>
+      <div class="stat warn" data-go="leads"><b>${newL}</b><span>💬 Tư vấn chưa liên hệ</span></div>
+      <div class="stat info" data-go="users"><b>${USERS.length}</b><span>👥 Khách có tài khoản</span></div>`;
+    $$("#dashStats .stat").forEach((el) => el.addEventListener("click", () => showTab(el.dataset.go)));
+
+    $("#dashOrders").innerHTML = ORDERS.slice(0, 5).map((o) => {
+      const st = ORDER_STATUS[o.status] || { label: o.status, color: "#64748b", icon: "" };
+      return `<div class="card"><div class="top">
+        <div><span class="code">${esc(o.code)}</span> — ${esc(o.name)} · ${esc(o.car)}</div>
+        <span class="pill" style="background:${st.color}">${st.icon} ${st.label}</span>
+      </div><div class="meta">${fmtTime(o.createdAt)} · ${fmt(o.total)}</div></div>`;
+    }).join("") || `<div class="empty">Chưa có đơn nào.</div>`;
+
+    $("#dashLeads").innerHTML = LEADS.slice(0, 5).map((l) => {
+      const st = LEAD_ST[l.status] || LEAD_ST.new;
+      return `<div class="card"><div class="top">
+        <div><b>${esc(l.name)}</b> · ${esc(l.topic || "")}</div>
+        <span class="pill" style="background:${st.color}">${st.label}</span>
+      </div><div class="meta">${fmtTime(l.createdAt)} · ${esc(l.phone)}</div></div>`;
+    }).join("") || `<div class="empty">Chưa có yêu cầu tư vấn.</div>`;
+  }
+
+  // ================= ĐƠN THUÊ XE =================
+  const ORDER_FLOW = ["new", "confirmed", "delivering", "renting", "completed"];
+
+  function renderOrderChips() {
+    const counts = { all: ORDERS.length };
+    Object.keys(ORDER_STATUS).forEach((k) => { counts[k] = ORDERS.filter((o) => o.status === k).length; });
+    $("#orderChips").innerHTML =
+      `<button class="chip ${orderFilter === "all" ? "active" : ""}" data-of="all">Tất cả (${counts.all})</button>` +
+      Object.keys(ORDER_STATUS).map((k) =>
+        `<button class="chip ${orderFilter === k ? "active" : ""}" data-of="${k}">${ORDER_STATUS[k].icon} ${ORDER_STATUS[k].label} (${counts[k]})</button>`
+      ).join("");
+    $$("#orderChips [data-of]").forEach((b) => b.addEventListener("click", () => { orderFilter = b.dataset.of; renderOrders(); }));
+  }
+
+  function renderOrders() {
+    renderOrderChips();
+    const q = ($("#orderSearch").value || "").toLowerCase();
+    const items = ORDERS.filter((o) => {
+      if (orderFilter !== "all" && o.status !== orderFilter) return false;
+      if (q && !(o.code + " " + o.name + " " + o.phone + " " + o.car).toLowerCase().includes(q)) return false;
+      return true;
+    });
+    if (!items.length) { $("#orderList").innerHTML = `<div class="empty">Không có đơn nào khớp bộ lọc.</div>`; return; }
+
+    $("#orderList").innerHTML = items.map((o) => {
+      const st = ORDER_STATUS[o.status] || { label: o.status, color: "#64748b", icon: "" };
+      const flowIdx = ORDER_FLOW.indexOf(o.status);
+      const next = flowIdx >= 0 && flowIdx < ORDER_FLOW.length - 1 ? ORDER_FLOW[flowIdx + 1] : null;
+      return `<div class="card">
+        <div class="top">
+          <div>
+            <span class="code">${esc(o.code)}</span> ·
+            <b class="name">${esc(o.name)}</b> ·
+            <a href="tel:${esc(o.phone)}">${esc(o.phone)}</a>
+            ${o.userPhone ? ' <span title="Khách có tài khoản">👥</span>' : ""}
+          </div>
+          <span class="pill" style="background:${st.color}">${st.icon} ${st.label}</span>
+        </div>
+        <div class="meta">Đặt lúc ${fmtTime(o.createdAt)}${o.updatedAt ? " · cập nhật " + fmtTime(o.updatedAt) : ""}</div>
+        <div class="msg">🚗 ${esc(o.car)}
+🗓 ${esc(o.time)} (${o.mode === "month" ? "thuê tháng" : "thuê ngày"})
+📍 ${esc(o.pickup)}
+💰 Tạm tính: ${fmt(o.total)}${o.note ? "\n💬 Khách nhắn: " + esc(o.note) : ""}</div>
+        ${o.adminNote ? `<div class="msg note">📝 Ghi chú gửi khách: ${esc(o.adminNote)}</div>` : ""}
+        <div class="acts">
+          <a href="tel:${esc(o.phone)}">📞 Gọi</a>
+          <a href="https://zalo.me/${digits(o.phone)}" target="_blank" rel="noopener">💬 Zalo</a>
+          ${next ? `<button class="btn sm" data-next="${esc(o.code)}" data-st="${next}">➡ ${ORDER_STATUS[next].icon} ${ORDER_STATUS[next].label}</button>` : ""}
+          <select data-status="${esc(o.code)}">
+            ${Object.keys(ORDER_STATUS).map((k) => `<option value="${k}" ${o.status === k ? "selected" : ""}>${ORDER_STATUS[k].icon} ${ORDER_STATUS[k].label}</option>`).join("")}
+          </select>
+          <button class="btn sm ghost" data-note="${esc(o.code)}">📝 Ghi chú gửi khách</button>
+          <button class="btn sm danger" data-del="${esc(o.code)}">Xóa</button>
+        </div>
+      </div>`;
+    }).join("");
+
+    $$("#orderList [data-next]").forEach((b) => b.addEventListener("click", async () => {
+      b.disabled = true;
+      await api("/api/orders", "POST", { action: "status", code: b.dataset.next, status: b.dataset.st });
+      await loadAll(true);
+    }));
+    $$("#orderList [data-status]").forEach((sel) => sel.addEventListener("change", async () => {
+      await api("/api/orders", "POST", { action: "status", code: sel.dataset.status, status: sel.value });
+      await loadAll(true);
+    }));
+    $$("#orderList [data-note]").forEach((b) => b.addEventListener("click", async () => {
+      const o = ORDERS.find((x) => x.code === b.dataset.note);
+      const note = prompt("Ghi chú gửi khách (khách thấy trong trang tài khoản):", (o && o.adminNote) || "");
+      if (note === null) return;
+      await api("/api/orders", "POST", { action: "note", code: b.dataset.note, note });
+      await loadAll(true);
+    }));
+    $$("#orderList [data-del]").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm("Xóa vĩnh viễn đơn " + b.dataset.del + "?")) return;
+      await api("/api/orders", "POST", { action: "delete", code: b.dataset.del });
+      await loadAll(true);
+    }));
+  }
+
+  // ================= TƯ VẤN =================
+  function renderLeadChips() {
+    const counts = { all: LEADS.length };
+    Object.keys(LEAD_ST).forEach((k) => { counts[k] = LEADS.filter((l) => l.status === k).length; });
+    $("#leadChips").innerHTML =
+      `<button class="chip ${leadFilter === "all" ? "active" : ""}" data-lf="all">Tất cả (${counts.all})</button>` +
+      Object.keys(LEAD_ST).map((k) =>
+        `<button class="chip ${leadFilter === k ? "active" : ""}" data-lf="${k}">${LEAD_ST[k].label} (${counts[k]})</button>`
+      ).join("");
+    $$("#leadChips [data-lf]").forEach((b) => b.addEventListener("click", () => { leadFilter = b.dataset.lf; renderLeads(); }));
+  }
+
+  function renderLeads() {
+    renderLeadChips();
+    const q = ($("#leadSearch").value || "").toLowerCase();
+    const items = LEADS.filter((l) => {
+      if (leadFilter !== "all" && l.status !== leadFilter) return false;
+      if (q && !(l.name + " " + l.phone + " " + (l.topic || "") + " " + (l.message || "")).toLowerCase().includes(q)) return false;
+      return true;
+    });
+    if (!items.length) { $("#leadList").innerHTML = `<div class="empty">Không có yêu cầu nào khớp bộ lọc.</div>`; return; }
+
+    $("#leadList").innerHTML = items.map((l) => {
+      const st = LEAD_ST[l.status] || LEAD_ST.new;
+      return `<div class="card">
+        <div class="top">
+          <div><b class="name">${esc(l.name)}</b> · <a href="tel:${esc(l.phone)}">${esc(l.phone)}</a></div>
+          <span class="pill" style="background:${st.color}">${st.label}</span>
+        </div>
+        <div class="meta">${fmtTime(l.createdAt)} · 🎯 ${esc(l.topic || "(không có chủ đề)")} · nguồn: ${esc(l.source || "")}</div>
+        ${l.message ? `<div class="msg">💬 ${esc(l.message)}</div>` : ""}
+        ${l.note ? `<div class="msg note">📝 ${esc(l.note)}</div>` : ""}
+        <div class="acts">
+          <a href="tel:${esc(l.phone)}">📞 Gọi</a>
+          <a href="https://zalo.me/${digits(l.phone)}" target="_blank" rel="noopener">💬 Zalo</a>
+          <select data-lstatus="${esc(l.id)}">
+            ${Object.keys(LEAD_ST).map((k) => `<option value="${k}" ${l.status === k ? "selected" : ""}>${LEAD_ST[k].label}</option>`).join("")}
+          </select>
+          <button class="btn sm ghost" data-lnote="${esc(l.id)}">📝 Ghi chú</button>
+          <button class="btn sm danger" data-ldel="${esc(l.id)}">Xóa</button>
+        </div>
+      </div>`;
+    }).join("");
+
+    $$("#leadList [data-lstatus]").forEach((sel) => sel.addEventListener("change", async () => {
+      await api("/api/leads", "POST", { action: "status", id: sel.dataset.lstatus, status: sel.value });
+      await loadAll(true);
+    }));
+    $$("#leadList [data-lnote]").forEach((b) => b.addEventListener("click", async () => {
+      const l = LEADS.find((x) => x.id === b.dataset.lnote);
+      const note = prompt("Ghi chú nội bộ:", (l && l.note) || "");
+      if (note === null) return;
+      await api("/api/leads", "POST", { action: "note", id: b.dataset.lnote, note });
+      await loadAll(true);
+    }));
+    $$("#leadList [data-ldel]").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm("Xóa vĩnh viễn yêu cầu này?")) return;
+      await api("/api/leads", "POST", { action: "delete", id: b.dataset.ldel });
+      await loadAll(true);
+    }));
+  }
+
+  // ================= KHÁCH HÀNG =================
+  function renderUsers() {
+    const q = ($("#userSearch").value || "").toLowerCase();
+    const items = USERS.filter((u) => !q || (u.name + " " + u.phone).toLowerCase().includes(q));
+    if (!items.length) { $("#userList").innerHTML = `<div class="empty">Chưa có khách hàng đăng ký tài khoản.</div>`; return; }
+
+    $("#userList").innerHTML = items.map((u) => {
+      const uOrders = ORDERS.filter((o) => digits(o.phone) === digits(u.phone));
+      const spent = uOrders.filter((o) => o.status === "completed").reduce((s, o) => s + (Number(o.total) || 0), 0);
+      return `<div class="card">
+        <div class="top">
+          <div><b class="name">${esc(u.name)}</b> · <a href="tel:${esc(u.phone)}">${esc(u.phone)}</a></div>
+          <div class="meta">Đăng ký ${fmtTime(u.createdAt)}</div>
+        </div>
+        <div class="meta">🚗 ${uOrders.length} đơn thuê · 💰 Đã hoàn tất: ${fmt(spent)}</div>
+        <div class="acts">
+          <a href="tel:${esc(u.phone)}">📞 Gọi</a>
+          <a href="https://zalo.me/${digits(u.phone)}" target="_blank" rel="noopener">💬 Zalo</a>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  // ================= XUẤT CSV =================
+  function downloadCSV(filename, rows) {
+    const csv = "﻿" + rows.map((r) => r.map((c) => `"${String(c == null ? "" : c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+  $("#csvOrders").addEventListener("click", () => {
+    downloadCSV("don-thue-xe.csv", [
+      ["Mã đơn", "Khách", "SĐT", "Xe", "Thời gian", "Nhận xe", "Tạm tính", "Trạng thái", "Ghi chú khách", "Ghi chú gửi khách", "Ngày đặt"],
+      ...ORDERS.map((o) => [o.code, o.name, o.phone, o.car, o.time, o.pickup, o.total, (ORDER_STATUS[o.status] || {}).label || o.status, o.note || "", o.adminNote || "", o.createdAt])
+    ]);
+  });
+  $("#csvLeads").addEventListener("click", () => {
+    downloadCSV("tu-van.csv", [
+      ["Khách", "SĐT", "Chủ đề", "Lời nhắn", "Trạng thái", "Nguồn", "Ngày gửi"],
+      ...LEADS.map((l) => [l.name, l.phone, l.topic || "", l.message || "", (LEAD_ST[l.status] || {}).label || l.status, l.source || "", l.createdAt])
+    ]);
+  });
+
+  // ================= TAB & ĐĂNG NHẬP =================
+  function showTab(name) {
+    ["dash", "orders", "leads", "users"].forEach((t) => { $("#tab-" + t).style.display = t === name ? "" : "none"; });
+    $$("#tabs [data-tab]").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
+  }
+  $$("#tabs [data-tab]").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
+
+  function showLogin(err) {
+    $("#app").style.display = "none";
+    $("#loginBox").style.display = "";
+    $("#loginErr").textContent = err || "";
+  }
+  async function showApp() {
+    $("#loginBox").style.display = "none";
+    $("#app").style.display = "";
+    await loadAll();
+  }
+
+  $("#loginBtn").addEventListener("click", async () => {
+    KEY = $("#adminKey").value.trim();
+    if (!KEY) return;
+    $("#loginBtn").disabled = true;
+    $("#loginBtn").textContent = "Đang kiểm tra...";
+    try {
+      const r = await api("/api/leads", "GET");
+      if (r.status === 401) {
+        showLogin("Sai mật khẩu quản trị.");
+      } else {
+        sessionStorage.setItem("txd_admin_key", KEY);
+        await showApp();
+      }
+    } catch (e) {
+      showLogin("Không gọi được API — trang này chỉ hoạt động khi đã deploy lên Vercel.");
+    }
+    $("#loginBtn").disabled = false;
+    $("#loginBtn").textContent = "Đăng nhập";
+  });
+  $("#adminKey").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#loginBtn").click(); });
+  $("#logoutBtn").addEventListener("click", () => {
+    sessionStorage.removeItem("txd_admin_key");
+    KEY = "";
+    showLogin("");
+  });
+
+  ["#reloadAll", "#reloadOrders", "#reloadLeads", "#reloadUsers"].forEach((id) =>
+    $(id).addEventListener("click", () => loadAll())
+  );
+  $("#orderSearch").addEventListener("input", renderOrders);
+  $("#leadSearch").addEventListener("input", renderLeads);
+  $("#userSearch").addEventListener("input", renderUsers);
+
+  // Tự làm mới mỗi 90 giây để thấy đơn mới
+  setInterval(() => { if (KEY && $("#app").style.display !== "none") loadAll(true); }, 90000);
+
+  if (KEY) showApp(); else showLogin("");
+})();
+</script>
+</body>
+</html>
