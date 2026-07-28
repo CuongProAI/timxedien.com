@@ -76,8 +76,8 @@ header.site{
 }
 .logo small{display:block;font-size:11px;font-weight:500;color:var(--mut);letter-spacing:.4px}
 .logo b{color:var(--green-d)}
-.menu{display:flex;gap:22px;margin-left:auto;align-items:center}
-.menu a{font-size:14.5px;font-weight:600;color:#3a4750;padding:6px 2px;border-bottom:2px solid transparent;transition:.2s}
+.menu{display:flex;gap:16px;margin-left:auto;align-items:center}
+.menu a{font-size:14px;font-weight:600;color:#3a4750;padding:6px 2px;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap}
 .menu a:hover{color:var(--green-d);border-color:var(--green)}
 .nav>.btn{margin-left:4px}
 .nav-toggle{display:none;font-size:26px;color:var(--ink);margin-left:auto}
@@ -413,6 +413,17 @@ footer{background:var(--ink);color:#aab4b0;padding:56px 0 0;font-size:14px}
 @media (max-width:1080px){
   .rev-nav.prev{left:-10px}.rev-nav.next{right:-10px}
 }
+@media (max-width:1200px){
+  .menu{
+    position:fixed;inset:0 0 auto 0;top:0;background:#fff;flex-direction:column;gap:4px;
+    padding:86px 24px 26px;box-shadow:var(--shadow-lg);transform:translateY(-110%);
+    transition:.3s;z-index:80;align-items:stretch;
+  }
+  .menu.open{transform:none}
+  .menu a{padding:13px 10px;border-bottom:1px solid var(--line);font-size:16px;white-space:normal}
+  .nav-toggle{display:block;z-index:95}
+  .nav>.btn{display:none}
+}
 @media (max-width:992px){
   .hero-grid{grid-template-columns:1fr;gap:40px}
   .hero h1{font-size:38px}
@@ -422,15 +433,6 @@ footer{background:var(--ink);color:#aab4b0;padding:56px 0 0;font-size:14px}
   .calc{grid-template-columns:1fr;padding:30px}
   .contact-grid{grid-template-columns:1fr}
   .foot-grid{grid-template-columns:1fr 1fr}
-  .menu{
-    position:fixed;inset:0 0 auto 0;top:0;background:#fff;flex-direction:column;gap:4px;
-    padding:86px 24px 26px;box-shadow:var(--shadow-lg);transform:translateY(-110%);
-    transition:.3s;z-index:80;align-items:stretch;
-  }
-  .menu.open{transform:none}
-  .menu a{padding:13px 10px;border-bottom:1px solid var(--line);font-size:16px}
-  .nav-toggle{display:block;z-index:95}
-  .nav>.btn{display:none}
 }
 @media (max-width:640px){
   section{padding:60px 0}
