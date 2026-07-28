@@ -6,12 +6,12 @@
 
 const CONFIG = {
   brand: "TimXeDien.com",
-  slogan: "Thuê xe điện VinFast tự lái — Cần Thơ & Miền Tây",
+  slogan: "Thuê xe điện VinFast — Tự lái & Có tài xế tại Cần Thơ",
   hotline: "0939099018",
   hotlineDisplay: "0939.099.018",
   zalo: "https://zalo.me/0939099018",
   email: "timxedien@gmail.com",
-  address: "TP. Cần Thơ (giao xe tận nơi khu vực Ninh Kiều, Cái Răng, Bình Thủy)",
+  address: "TP. Cần Thơ (giao xe tận nơi khu vực Ninh Kiều, Cái Răng, Bình Thủy, Ô Môn, Thốt Nốt)",
   mapLink: "https://maps.google.com/?q=Ninh+Kieu+Can+Tho",
   facebook: "https://facebook.com/timxedien",
   tiktok: "https://tiktok.com/@timxedien",
@@ -60,7 +60,7 @@ const FLEET = [
     img: "images/cars/vf3.png",
     grad: ["#8a6a1d", "#4d3708"],
     tag: "ĐƯỢC THUÊ NHIỀU",
-    desc: "Mini SUV quốc dân, cá tính và cực hot. Gầm cao 191mm tự tin đường Miền Tây, chụp hình sống ảo cực chất.",
+    desc: "Mini SUV quốc dân, cá tính và cực hot. Gầm cao 191mm tự tin đường quê Cần Thơ, chụp hình sống ảo cực chất.",
     features: ["Gầm cao — hợp đường quê, đường ngập nhẹ", "Xe hot, lái là mê", "Sạc nhanh 36 phút (10%→70%)"]
   },
   {
@@ -172,7 +172,7 @@ const FLEET = [
     img: "images/cars/limo.png",
     grad: ["#365314", "#1a2e05"],
     tag: "ĐOÀN & GIA ĐÌNH",
-    desc: "MPV điện 7 chỗ rộng rãi — đi Phú Quốc, Hà Tiên, Châu Đốc cả đại gia đình. Bản dịch vụ chạy tour cực kinh tế.",
+    desc: "MPV điện 7 chỗ rộng rãi — đi Hà Tiên, Châu Đốc, Sóc Trăng cả đại gia đình. Bản dịch vụ chạy tour cực kinh tế.",
     features: ["7 chỗ ngồi thoải mái thực sự", "Hợp thuê đi tour, đám tiệc", "Chi phí/ghế thấp nhất đội xe"]
   },
   {
@@ -247,7 +247,7 @@ const FAQS = [
   },
   {
     q: "Xe điện thì sạc ở đâu, có tốn tiền không?",
-    a: "Xe được sạc đầy trước khi giao. Trong thời gian thuê, bạn sạc MIỄN PHÍ tại hệ thống trạm V-Green phủ khắp Cần Thơ và Miền Tây (siêu thị, trạm dừng, cây xăng...). Chúng tôi gửi kèm bản đồ trạm sạc và hướng dẫn chi tiết khi giao xe."
+    a: "Xe được sạc đầy trước khi giao. Trong thời gian thuê, bạn sạc MIỄN PHÍ tại hệ thống trạm V-Green phủ khắp Cần Thơ (siêu thị, trạm dừng, cây xăng...). Chúng tôi gửi kèm bản đồ trạm sạc và hướng dẫn chi tiết khi giao xe."
   },
   {
     q: "Giới hạn số km di chuyển như thế nào?",
@@ -271,28 +271,44 @@ const FAQS = [
   }
 ];
 
-// ---- KHU VỰC HOẠT ĐỘNG ----
-const AREAS = [
+// ---- DỊCH VỤ THUÊ XE CÓ TÀI XẾ (trang co-tai-xe.html) ----
+// Giá chỉ mang tính tham khảo — cập nhật theo giá thực tế của bạn.
+const DRIVER_SERVICES = [
   {
-    name: "Cần Thơ",
-    status: "active",
-    statusLabel: "ĐANG HOẠT ĐỘNG",
-    desc: "Giao nhận xe toàn TP. Cần Thơ: Ninh Kiều, Cái Răng, Bình Thủy, Ô Môn, Thốt Nốt. Nhận xe tại sân bay VCA và bến xe trung tâm.",
-    spots: ["Ninh Kiều", "Cái Răng", "Bình Thủy", "Sân bay VCA", "Ô Môn", "Thốt Nốt"]
+    id: "sanbay",
+    icon: "✈️",
+    name: "Đưa đón sân bay Cần Thơ",
+    price: "Từ 350.000đ",
+    unit: "mỗi lượt · khứ hồi giảm 10%",
+    desc: "Tài xế theo dõi giờ bay thực tế, đón tận cửa ra — chủ động cả khi chuyến bay trễ giờ.",
+    includes: ["Đón tận cửa ra, hỗ trợ hành lý", "Theo dõi giờ bay realtime", "Xe điện êm, có nước uống miễn phí"]
   },
   {
-    name: "Miền Tây",
-    status: "soon",
-    statusLabel: "SẮP RA MẮT",
-    desc: "Vĩnh Long, Đồng Tháp, An Giang, Kiên Giang, Sóc Trăng, Hậu Giang... Đăng ký trước để nhận ưu đãi khai trương từng tỉnh.",
-    spots: ["Vĩnh Long", "Long Xuyên", "Châu Đốc", "Rạch Giá", "Sóc Trăng", "Vị Thanh"]
+    id: "gio",
+    icon: "🕐",
+    name: "Theo giờ nội thành",
+    price: "Từ 550.000đ",
+    unit: "gói 4 giờ · gồm 40km",
+    desc: "Đi họp, công việc, mua sắm trong ngày — xe và tài xế chờ sẵn theo lịch trình của bạn.",
+    includes: ["Gói 4 giờ hoặc 8 giờ", "Tài xế thông thuộc nội ô Cần Thơ", "Đổi lịch trước 2 giờ, không phụ phí"]
   },
   {
-    name: "Phú Quốc",
-    status: "soon",
-    statusLabel: "DỰ KIẾN 2026",
-    desc: "Thuê xe điện vi vu đảo ngọc — nhận xe tại sân bay Phú Quốc. Để lại thông tin để trở thành khách hàng đầu tiên với ưu đãi tới 30%.",
-    spots: ["Sân bay Phú Quốc", "Dương Đông", "An Thới", "Grand World"]
+    id: "tour",
+    icon: "🗺️",
+    name: "Đi tỉnh / Tour trong ngày",
+    price: "Từ 1.500.000đ",
+    unit: "trọn ngày · gồm 250km",
+    desc: "Cần Thơ đi Sóc Trăng, Châu Đốc, Hà Tiên, Cà Mau... tài xế rành đường, rành điểm dừng chân.",
+    includes: ["Trọn ngày 8–10 tiếng", "Tài xế kiêm hướng dẫn địa phương", "Hỗ trợ lên lịch trình, điểm ăn uống"]
+  },
+  {
+    id: "thang",
+    icon: "📅",
+    name: "Tài xế riêng theo tháng",
+    price: "Từ 12.000.000đ",
+    unit: "mỗi tháng · xe + tài xế cố định",
+    desc: "Cho cá nhân bận rộn hoặc doanh nghiệp cần xe đưa đón hằng ngày tại Cần Thơ.",
+    includes: ["Tài xế cố định, đúng giờ", "Xuất hóa đơn VAT cho doanh nghiệp", "Bao chi phí sạc điện & bảo dưỡng"]
   }
 ];
 
@@ -391,7 +407,7 @@ const ACCESSORIES = [
   { id: "pk-sacdiddong", cat: "sac", icon: "🔌", name: "Sạc di động 3,5kW", price: "3,5 – 6 triệu", desc: "Sạc mọi nơi có ổ điện gia đình. Vật bất ly thân cho chủ xe điện ở trọ, chung cư chưa có trạm." },
   { id: "pk-wallbox", cat: "sac", icon: "⚡", name: "Trụ sạc treo tường 7,4kW", price: "12 – 18 triệu (trọn gói lắp đặt)", desc: "Sạc đầy qua đêm nhanh gấp đôi. Khảo sát điện nhà miễn phí tại Cần Thơ, lắp trong 1 buổi." },
   { id: "pk-capsac", cat: "sac", icon: "🧵", name: "Cáp sạc & adapter dự phòng", price: "800k – 2,5 triệu", desc: "Cáp Type 2 các độ dài, adapter chuyển đổi — dự phòng khi đi tỉnh xa, về quê." },
-  { id: "pk-ppf", cat: "baove", icon: "🛡️", name: "Dán PPF chống trầy toàn xe", price: "15 – 45 triệu", desc: "Phim bảo vệ sơn tự phục hồi vết xước nhẹ — giữ giá xe khi bán lại, hợp khí hậu nắng mưa Miền Tây." },
+  { id: "pk-ppf", cat: "baove", icon: "🛡️", name: "Dán PPF chống trầy toàn xe", price: "15 – 45 triệu", desc: "Phim bảo vệ sơn tự phục hồi vết xước nhẹ — giữ giá xe khi bán lại, hợp khí hậu nắng mưa Cần Thơ." },
   { id: "pk-phim", cat: "baove", icon: "🕶️", name: "Phim cách nhiệt 3M / LLumar", price: "4 – 8 triệu", desc: "Giảm nóng rõ rệt, tiết kiệm pin điều hòa — món đáng tiền nhất cho xe điện xứ nóng." },
   { id: "pk-ceramic", cat: "baove", icon: "✨", name: "Phủ ceramic bóng sơn", price: "3 – 12 triệu", desc: "Bóng đẹp 2-3 năm, hạn chế ố nước mưa axít, dễ rửa xe. Thi công tại xưởng đối tác Cần Thơ." },
   { id: "pk-tham", cat: "noithat", icon: "🧩", name: "Thảm sàn 6D theo xe", price: "1,2 – 2,5 triệu", desc: "Cắt chuẩn theo từng dòng VinFast, chống nước — hợp mùa mưa và những chuyến về quê." },
@@ -399,5 +415,5 @@ const ACCESSORIES = [
   { id: "pk-gheem", cat: "noithat", icon: "👶", name: "Ghế an toàn trẻ em ISOFIX", price: "2 – 5 triệu", desc: "Chuẩn an toàn châu Âu, lắp khớp ISOFIX có sẵn trên xe VinFast. Tư vấn chọn theo tuổi bé." },
   { id: "pk-camera", cat: "congnghe", icon: "📷", name: "Camera hành trình trước–sau", price: "2 – 6 triệu", desc: "Ghi hình 2K/4K, xem lại qua app — bằng chứng va chạm, giám sát khi cho thuê lại xe." },
   { id: "pk-tpms", cat: "congnghe", icon: "🛞", name: "Cảm biến áp suất lốp TPMS", price: "1,5 – 3 triệu", desc: "Theo dõi lốp realtime — lốp non hơi làm hao pin đáng kể, món này hoàn vốn nhanh." },
-  { id: "pk-bom", cat: "congnghe", icon: "💨", name: "Bơm lốp điện + bộ cứu hộ", price: "700k – 1,8 triệu", desc: "Bơm pin sạc, vá lốp khẩn cấp, đèn tín hiệu — bộ đồ nghề gọn cho mọi chuyến đi Miền Tây." }
+  { id: "pk-bom", cat: "congnghe", icon: "💨", name: "Bơm lốp điện + bộ cứu hộ", price: "700k – 1,8 triệu", desc: "Bơm pin sạc, vá lốp khẩn cấp, đèn tín hiệu — bộ đồ nghề gọn cho mọi chuyến đi xa." }
 ];

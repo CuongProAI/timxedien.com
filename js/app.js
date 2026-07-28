@@ -1,6 +1,6 @@
 // ============================================================
 // TIMXEDIEN.COM — CHỨC NĂNG WEBSITE
-// Phụ thuộc js/data.js (CONFIG, FLEET, PICKUP_POINTS, REVIEWS, FAQS, AREAS)
+// Phụ thuộc js/data.js (CONFIG, FLEET, PICKUP_POINTS, REVIEWS, FAQS)
 // ============================================================
 
 (function () {
@@ -108,7 +108,7 @@
     const unit = priceUnit === "day" ? "/ngày" : "/tháng";
     return `
     <article class="car-card reveal visible" data-seg="${car.segment}">
-      <div class="car-media" style="background:linear-gradient(150deg,${car.grad[0]},${car.grad[1]})">
+      <div class="car-media">
         ${car.tag ? `<span class="car-tag">${car.tag}</span>` : ""}
         <img src="${car.img}" alt="Thuê ${car.name} tại Cần Thơ" loading="lazy">
       </div>
@@ -158,7 +158,7 @@
     $("#dtName").textContent = car.name;
     $("#dtSeg").textContent = `${car.segmentLabel} · ${car.seats} chỗ · ${car.range}`;
     $("#dtBody").innerHTML = `
-      <div class="detail-media" style="background:linear-gradient(150deg,${car.grad[0]},${car.grad[1]})">
+      <div class="detail-media">
         <img src="${car.img}" alt="${car.name}">
       </div>
       <p style="font-size:14.5px;color:var(--mut)">${car.desc}</p>
@@ -394,15 +394,6 @@
       if (opt) $("#cfTopic").value = opt.value;
     })
   );
-
-  // ---------- Khu vực ----------
-  $("#areasGrid").innerHTML = AREAS.map((a) => `
-    <div class="area reveal">
-      <span class="badge ${a.status}">${a.statusLabel}</span>
-      <h3>${a.status === "active" ? "📍" : "🔜"} ${a.name}</h3>
-      <p>${a.desc}</p>
-      <div class="spots">${a.spots.map((s) => `<span>${s}</span>`).join("")}</div>
-    </div>`).join("");
 
   // ---------- Đánh giá ----------
   let revIdx = 0, revTimer;
