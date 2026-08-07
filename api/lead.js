@@ -1,7 +1,6 @@
-// API nhận đơn đặt xe & đăng ký tư vấn từ TimXeDien.com — lưu vào Vercel Blob
-// Cần bật Vercel Blob cho project (Storage → Create Blob store).
+// API nhận đơn đặt xe & đăng ký tư vấn từ TimXeDien.com — lưu vào Supabase (bảng "leads")
 // Tùy chọn: đặt biến môi trường TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID để nhận thông báo tức thì.
-const { put } = require('@vercel/blob');
+const { supabase } = require('./_lib');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -22,20 +21,8 @@ module.exports = async (req, res) => {
     }
 
     const id = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
-    const lead = {
-      id, name, phone, topic, message, source, booking,
-      status: 'new',
-      createdAt: new Date().toISOString()
-    };
-
-    const payload = JSON.stringify(lead);
-    const opts = { contentType: 'application/json', addRandomSuffix: false, allowOverwrite: true };
-    try {
-      await put(`leads/${id}.json`, payload, { ...opts, access: 'private' });
-    } catch (e) {
-      // Kho blob cũ chỉ hỗ trợ access public
-      await put(`leads/${id}.json`, payload, { ...opts, access: 'public' });
-    }
+    const { error } = await supabase.from('leads').insert({ id, name, phone, topic, message, source, booking, status: 'new' });
+    if (error) throw error;
 
     // Báo Telegram nếu đã cấu hình
     const tg = process.env.TELEGRAM_BOT_TOKEN;

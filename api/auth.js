@@ -1,11 +1,10 @@
 // API tài khoản khách hàng TimXeDien — đăng ký / đăng nhập / lấy thông tin
-// Lưu tại Blob: users/<sđt>.json. Token HMAC hạn 90 ngày.
+// Lưu tại Supabase (bảng "users"). Token HMAC hạn 90 ngày.
 // Nên đặt biến môi trường SESSION_SECRET (chuỗi ngẫu nhiên dài) khi deploy.
-const { put, head } = require('@vercel/blob');
 const crypto = require('crypto');
+const { supabase } = require('./_lib');
 
 const SECRET = process.env.SESSION_SECRET || process.env.ADMIN_KEY || 'txd-doi-secret-khi-deploy';
-const TOKEN_BLOB = process.env.BLOB_READ_WRITE_TOKEN;
 
 const b64u = (s) => Buffer.from(s).toString('base64url');
 const phoneKey = (p) => String(p || '').replace(/\D/g, '');
@@ -27,26 +26,6 @@ function verifyToken(token) {
   } catch (e) { return null; }
 }
 
-async function readBlobJson(pathname) {
-  const meta = await head(pathname).catch(() => null);
-  if (!meta) return null;
-  const bust = meta.url + (meta.url.includes('?') ? '&' : '?') + '_=' + Date.now();
-  let r = await fetch(bust, { headers: { authorization: `Bearer ${TOKEN_BLOB}` } });
-  if (!r.ok) r = await fetch(bust);
-  if (!r.ok) return null;
-  try { return await r.json(); } catch { return null; }
-}
-
-async function writeBlobJson(pathname, obj) {
-  const payload = JSON.stringify(obj);
-  const opts = { contentType: 'application/json', addRandomSuffix: false, allowOverwrite: true };
-  try {
-    await put(pathname, payload, { ...opts, access: 'private' });
-  } catch (e) {
-    await put(pathname, payload, { ...opts, access: 'public' });
-  }
-}
-
 function hashPass(password, salt) {
   return crypto.scryptSync(String(password), salt, 64).toString('hex');
 }
@@ -57,9 +36,12 @@ module.exports = async (req, res) => {
     if (req.method === 'GET') {
       const auth = verifyToken((req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
       if (!auth) return res.status(401).json({ error: 'Phiên đăng nhập hết hạn' });
-      const user = await readBlobJson(`users/${phoneKey(auth.p)}.json`);
+      const { data: user, error } = await supabase
+        .from('users').select('name, phone, created_at')
+        .eq('phone', phoneKey(auth.p)).maybeSingle();
+      if (error) throw error;
       if (!user) return res.status(404).json({ error: 'Không tìm thấy tài khoản' });
-      return res.status(200).json({ ok: true, user: { name: user.name, phone: user.phone, createdAt: user.createdAt } });
+      return res.status(200).json({ ok: true, user: { name: user.name, phone: user.phone, createdAt: user.created_at } });
     }
 
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -76,32 +58,31 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Mật khẩu cần tối thiểu 6 ký tự.' });
     }
 
-    const pathname = `users/${phone}.json`;
-
     if (action === 'register') {
       const name = String(body.name || '').trim().slice(0, 100);
       if (!name) return res.status(400).json({ error: 'Vui lòng nhập họ tên.' });
-      const existed = await readBlobJson(pathname);
+
+      const { data: existed, error: exErr } = await supabase.from('users').select('phone').eq('phone', phone).maybeSingle();
+      if (exErr) throw exErr;
       if (existed) return res.status(409).json({ error: 'Số điện thoại này đã có tài khoản — hãy đăng nhập.' });
 
       const salt = crypto.randomBytes(16).toString('hex');
-      const user = {
-        phone, name, salt,
-        passHash: hashPass(password, salt),
-        createdAt: new Date().toISOString()
-      };
-      await writeBlobJson(pathname, user);
-      return res.status(200).json({ ok: true, token: signToken(user), user: { name, phone } });
+      const passHash = hashPass(password, salt);
+      const { error } = await supabase.from('users').insert({ phone, name, salt, pass_hash: passHash });
+      if (error) throw error;
+      return res.status(200).json({ ok: true, token: signToken({ phone, name }), user: { name, phone } });
     }
 
     if (action === 'login') {
-      const user = await readBlobJson(pathname);
+      const { data: user, error } = await supabase.from('users').select('*').eq('phone', phone).maybeSingle();
+      if (error) throw error;
       if (!user) return res.status(404).json({ error: 'Chưa có tài khoản với số này — hãy đăng ký.' });
       const tryHash = hashPass(password, user.salt);
-      if (!crypto.timingSafeEqual(Buffer.from(tryHash), Buffer.from(user.passHash))) {
+      const a = Buffer.from(tryHash), b = Buffer.from(user.pass_hash);
+      if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
         return res.status(401).json({ error: 'Mật khẩu chưa đúng.' });
       }
-      return res.status(200).json({ ok: true, token: signToken(user), user: { name: user.name, phone: user.phone } });
+      return res.status(200).json({ ok: true, token: signToken({ phone: user.phone, name: user.name }), user: { name: user.name, phone: user.phone } });
     }
 
     return res.status(400).json({ error: 'Hành động không hợp lệ' });

@@ -1,13 +1,12 @@
-// API đơn thuê xe TimXeDien — lưu tại Blob: orders/<mã đơn>.json
+// API đơn thuê xe TimXeDien — lưu tại Supabase (bảng "orders")
 // - POST (không có action): khách tạo đơn mới (kèm token nếu đã đăng nhập)
 // - GET  + Authorization: khách xem đơn của chính mình
 // - GET  + x-admin-key:   admin xem toàn bộ đơn
 // - POST + x-admin-key {action: status|note|delete}: admin xử lý đơn
-const { put, head, del, list } = require('@vercel/blob');
 const crypto = require('crypto');
+const { supabase } = require('./_lib');
 
 const SECRET = process.env.SESSION_SECRET || process.env.ADMIN_KEY || 'txd-doi-secret-khi-deploy';
-const TOKEN_BLOB = process.env.BLOB_READ_WRITE_TOKEN;
 const STATUSES = ['new', 'confirmed', 'delivering', 'renting', 'completed', 'cancelled'];
 
 const phoneKey = (p) => String(p || '').replace(/\D/g, '');
@@ -23,28 +22,13 @@ function verifyToken(token) {
   } catch (e) { return null; }
 }
 
-async function fetchBlobJson(url) {
-  const bust = url + (url.includes('?') ? '&' : '?') + '_=' + Date.now();
-  let r = await fetch(bust, { headers: { authorization: `Bearer ${TOKEN_BLOB}` } });
-  if (!r.ok) r = await fetch(bust);
-  if (!r.ok) return null;
-  try { return await r.json(); } catch { return null; }
-}
-
-async function writeBlobJson(pathname, obj) {
-  const payload = JSON.stringify(obj);
-  const opts = { contentType: 'application/json', addRandomSuffix: false, allowOverwrite: true };
-  try {
-    await put(pathname, payload, { ...opts, access: 'private' });
-  } catch (e) {
-    await put(pathname, payload, { ...opts, access: 'public' });
-  }
-}
-
-async function allOrders() {
-  const { blobs } = await list({ prefix: 'orders/', limit: 1000 });
-  const orders = (await Promise.all(blobs.map((b) => fetchBlobJson(b.url)))).filter(Boolean);
-  return orders.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+function rowToOrder(r) {
+  return {
+    code: r.code, name: r.name, phone: r.phone, car: r.car, carId: r.car_id,
+    mode: r.mode, time: r.time_range, pickup: r.pickup, total: Number(r.total) || 0,
+    note: r.note, adminNote: r.admin_note, userPhone: r.user_phone, status: r.status,
+    createdAt: r.created_at, updatedAt: r.updated_at
+  };
 }
 
 async function notifyTelegram(text) {
@@ -69,11 +53,17 @@ module.exports = async (req, res) => {
     // ----- Xem đơn -----
     if (req.method === 'GET') {
       if (isAdmin) {
-        return res.status(200).json({ ok: true, orders: await allOrders() });
+        const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        return res.status(200).json({ ok: true, orders: data.map(rowToOrder) });
       }
       if (auth) {
-        const mine = (await allOrders()).filter((o) => phoneKey(o.phone) === phoneKey(auth.p));
-        return res.status(200).json({ ok: true, orders: mine });
+        const { data, error } = await supabase
+          .from('orders').select('*')
+          .eq('user_phone', phoneKey(auth.p))
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        return res.status(200).json({ ok: true, orders: data.map(rowToOrder) });
       }
       return res.status(401).json({ error: 'Cần đăng nhập' });
     }
@@ -86,28 +76,27 @@ module.exports = async (req, res) => {
       if (!isAdmin) return res.status(401).json({ error: 'Sai mật khẩu quản trị' });
       const code = String(body.code || '').toUpperCase();
       if (!/^TXD-[A-Z0-9]{4,10}$/.test(code)) return res.status(400).json({ error: 'Mã đơn không hợp lệ' });
-      const pathname = `orders/${code}.json`;
-      const meta = await head(pathname).catch(() => null);
-      if (!meta) return res.status(404).json({ error: 'Không tìm thấy đơn ' + code });
 
       if (body.action === 'delete') {
-        await del(meta.url);
+        const { error } = await supabase.from('orders').delete().eq('code', code);
+        if (error) throw error;
         return res.status(200).json({ ok: true });
       }
-      const order = await fetchBlobJson(meta.url);
-      if (!order) return res.status(404).json({ error: 'Không đọc được đơn' });
 
+      const patch = { updated_at: new Date().toISOString() };
       if (body.action === 'status') {
         if (!STATUSES.includes(body.status)) return res.status(400).json({ error: 'Trạng thái không hợp lệ' });
-        order.status = body.status;
+        patch.status = body.status;
       } else if (body.action === 'note') {
-        order.adminNote = String(body.note || '').slice(0, 500);
+        patch.admin_note = String(body.note || '').slice(0, 500);
       } else {
         return res.status(400).json({ error: 'Hành động không hợp lệ' });
       }
-      order.updatedAt = new Date().toISOString();
-      await writeBlobJson(pathname, order);
-      return res.status(200).json({ ok: true, order });
+
+      const { data, error } = await supabase.from('orders').update(patch).eq('code', code).select().maybeSingle();
+      if (error) throw error;
+      if (!data) return res.status(404).json({ error: 'Không tìm thấy đơn ' + code });
+      return res.status(200).json({ ok: true, order: rowToOrder(data) });
     }
 
     // ----- Khách tạo đơn mới -----
@@ -121,20 +110,21 @@ module.exports = async (req, res) => {
       code = 'TXD-' + crypto.randomBytes(4).toString('hex').slice(0, 6).toUpperCase();
     }
 
-    const order = {
+    const row = {
       code, name, phone,
       car: String(body.car || '').slice(0, 80),
-      carId: String(body.carId || '').slice(0, 30),
+      car_id: String(body.carId || '').slice(0, 30),
       mode: body.mode === 'month' ? 'month' : 'day',
-      time: String(body.time || '').slice(0, 120),
+      time_range: String(body.time || '').slice(0, 120),
       pickup: String(body.pickup || '').slice(0, 120),
       total: Math.max(0, Number(body.total) || 0),
       note: String(body.note || '').slice(0, 500),
-      userPhone: auth ? phoneKey(auth.p) : null,
-      status: 'new',
-      createdAt: new Date().toISOString()
+      user_phone: auth ? phoneKey(auth.p) : null,
+      status: 'new'
     };
-    await writeBlobJson(`orders/${code}.json`, order);
+    const { data, error } = await supabase.from('orders').insert(row).select().single();
+    if (error) throw error;
+    const order = rowToOrder(data);
 
     await notifyTelegram(
       `🚗 ĐƠN THUÊ XE MỚI — TIMXEDIEN.COM\n🎫 ${code}\n👤 ${name}\n📞 ${phone}\n🚙 ${order.car}\n🗓 ${order.time}\n📍 ${order.pickup}\n💰 Tạm tính: ${order.total.toLocaleString('vi-VN')}đ${order.note ? '\n💬 ' + order.note : ''}${auth ? '\n👥 Khách có tài khoản' : ''}`

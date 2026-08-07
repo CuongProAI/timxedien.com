@@ -41,23 +41,22 @@ npx vercel          # lần đầu: tạo project mới tên "timxedien"
 npx vercel --prod   # đưa lên production
 ```
 
-Sau đó trong **Vercel Dashboard**:
-
-1. **Storage → Create Blob store** — nơi lưu đơn thuê, tài khoản, yêu cầu tư vấn
-2. **Settings → Environment Variables**:
+Dữ liệu (đơn thuê, tài khoản, yêu cầu tư vấn) lưu trong **Supabase** (Postgres) — tạo 1 project Supabase, chạy schema SQL trong `supabase-schema.sql`, rồi cấu hình trong **Vercel Dashboard → Settings → Environment Variables**:
 
 | Biến | Bắt buộc | Ý nghĩa |
 |---|---|---|
+| `SUPABASE_URL` | ✅ | URL project Supabase, dạng `https://xxxx.supabase.co` |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ | Khoá "secret"/"service_role" trong Project Settings → API Keys (KHÔNG phải khoá publishable/anon) |
 | `ADMIN_KEY` | ✅ | Mật khẩu đăng nhập trang `/admin` |
 | `SESSION_SECRET` | ✅ nên có | Chuỗi ngẫu nhiên dài ký phiên đăng nhập của khách |
 | `TELEGRAM_BOT_TOKEN` | ⬜ | Bot Telegram báo đơn mới về điện thoại bạn |
 | `TELEGRAM_CHAT_ID` | ⬜ | Chat ID nhận thông báo |
 
-3. **Settings → Domains** — trỏ tên miền `timxedien.com`
+Sau đó **Settings → Domains** — trỏ tên miền `timxedien.com`
 
 ## 🔁 Luồng vận hành hằng ngày
 
-1. Khách đặt xe trên web → đơn lưu Blob + **báo Telegram ngay**
+1. Khách đặt xe trên web → đơn lưu vào Supabase + **báo Telegram ngay**
 2. Bạn mở **`/admin`** → tab *Đơn thuê xe* → gọi khách → bấm **➡ Đã xác nhận**
 3. Giao xe: bấm **➡ Đang giao xe** → khách ký nhận: **➡ Đang thuê** → trả xe: **➡ Hoàn tất**
 4. Khách mở **`/tai-khoan`** thấy đúng trạng thái từng bước + ghi chú bạn gửi
