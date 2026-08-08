@@ -442,6 +442,14 @@
   }
 
   // ================= KHÁCH HÀNG =================
+  const VERIFY_ST = {
+    unverified: { label: "CHƯA NỘP GIẤY TỜ", color: "#64748b" },
+    pending: { label: "CHỜ DUYỆT", color: "#b45309" },
+    verified: { label: "ĐÃ XÁC MINH", color: "#15803d" },
+    rejected: { label: "BỊ TỪ CHỐI", color: "#b91c1c" }
+  };
+  const DOC_LABEL = { cccd_front: "CCCD mặt trước", cccd_back: "CCCD mặt sau", license: "GPLX" };
+
   function renderUsers() {
     const q = ($("#userSearch").value || "").toLowerCase();
     const items = USERS.filter((u) => !q || (u.name + " " + u.phone).toLowerCase().includes(q));
@@ -450,18 +458,47 @@
     $("#userList").innerHTML = items.map((u) => {
       const uOrders = ORDERS.filter((o) => digits(o.phone) === digits(u.phone));
       const spent = uOrders.filter((o) => o.status === "completed").reduce((s, o) => s + (Number(o.total) || 0), 0);
+      const vst = VERIFY_ST[u.verifyStatus] || VERIFY_ST.unverified;
+      const uploadedTypes = Object.keys(u.uploaded || {}).filter((t) => u.uploaded[t]);
+      const canReview = uploadedTypes.length > 0;
       return `<div class="card">
         <div class="top">
           <div><b class="name">${esc(u.name)}</b> · <a href="tel:${esc(u.phone)}">${esc(u.phone)}</a></div>
-          <div class="meta">Đăng ký ${fmtTime(u.createdAt)}</div>
+          <span class="pill" style="background:${vst.color}">${vst.label}</span>
         </div>
+        <div class="meta">Đăng ký ${fmtTime(u.createdAt)}</div>
         <div class="meta">🚗 ${uOrders.length} đơn thuê · 💰 Đã hoàn tất: ${fmt(spent)}</div>
+        ${u.verifyStatus === "rejected" && u.verifyNote ? `<div class="msg note">Lý do từ chối: ${esc(u.verifyNote)}</div>` : ""}
         <div class="acts">
           <a href="tel:${esc(u.phone)}">📞 Gọi</a>
           <a href="https://zalo.me/${digits(u.phone)}" target="_blank" rel="noopener">💬 Zalo</a>
+          ${uploadedTypes.map((t) => `<button class="btn ghost sm" data-doc="${esc(u.phone)}" data-doctype="${t}">👁 ${DOC_LABEL[t]}</button>`).join("")}
+          ${canReview ? `
+            <button class="btn sm" data-verify="${esc(u.phone)}">✅ Duyệt</button>
+            <button class="btn danger sm" data-reject="${esc(u.phone)}">✖ Từ chối</button>
+          ` : ""}
         </div>
       </div>`;
     }).join("");
+
+    $$("#userList [data-doc]").forEach((b) => b.addEventListener("click", async () => {
+      b.disabled = true;
+      const r = await api("/api/users", "POST", { action: "doc-url", phone: b.dataset.doc, docType: b.dataset.doctype });
+      b.disabled = false;
+      if (r.ok && r.data && r.data.url) window.open(r.data.url, "_blank");
+      else alert((r.data && r.data.error) || "Không lấy được ảnh giấy tờ.");
+    }));
+    $$("#userList [data-verify]").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm("Duyệt xác minh CCCD/GPLX cho khách này?")) return;
+      await api("/api/users", "POST", { action: "verify", phone: b.dataset.verify, status: "verified" });
+      await loadAll(true);
+    }));
+    $$("#userList [data-reject]").forEach((b) => b.addEventListener("click", async () => {
+      const note = prompt("Lý do từ chối (khách sẽ thấy lý do này để nộp lại):", "Ảnh mờ, vui lòng chụp rõ hơn");
+      if (note === null) return;
+      await api("/api/users", "POST", { action: "verify", phone: b.dataset.reject, status: "rejected", note });
+      await loadAll(true);
+    }));
   }
 
   // ================= XUẤT CSV =================

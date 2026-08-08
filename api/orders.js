@@ -31,6 +31,19 @@ function rowToOrder(r) {
   };
 }
 
+// Gắn contractSignedAt vào danh sách đơn (lấy lần ký gần nhất mỗi mã đơn)
+async function withContractStatus(orders) {
+  const codes = orders.map((o) => o.code);
+  if (!codes.length) return orders;
+  const { data, error } = await supabase.from('contracts').select('order_code, signed_at').in('order_code', codes);
+  if (error || !data) return orders;
+  const signedMap = {};
+  data.forEach((c) => {
+    if (!signedMap[c.order_code] || c.signed_at > signedMap[c.order_code]) signedMap[c.order_code] = c.signed_at;
+  });
+  return orders.map((o) => ({ ...o, contractSignedAt: signedMap[o.code] || null }));
+}
+
 async function notifyTelegram(text) {
   const tg = process.env.TELEGRAM_BOT_TOKEN;
   const chat = process.env.TELEGRAM_CHAT_ID;
@@ -55,7 +68,7 @@ module.exports = async (req, res) => {
       if (isAdmin) {
         const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
         if (error) throw error;
-        return res.status(200).json({ ok: true, orders: data.map(rowToOrder) });
+        return res.status(200).json({ ok: true, orders: await withContractStatus(data.map(rowToOrder)) });
       }
       if (auth) {
         const { data, error } = await supabase
@@ -63,7 +76,7 @@ module.exports = async (req, res) => {
           .eq('user_phone', phoneKey(auth.p))
           .order('created_at', { ascending: false });
         if (error) throw error;
-        return res.status(200).json({ ok: true, orders: data.map(rowToOrder) });
+        return res.status(200).json({ ok: true, orders: await withContractStatus(data.map(rowToOrder)) });
       }
       return res.status(401).json({ error: 'Cần đăng nhập' });
     }

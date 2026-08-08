@@ -127,6 +127,34 @@
       <button class="btn btn-outline btn-sm" id="btnLogout" style="margin-left:0">Đăng xuất</button>
     </div>
 
+    <!-- ===== Xác minh danh tính ===== -->
+    <div class="panel" id="verifyPanel" style="margin-bottom:28px">
+      <h3>🪪 Xác minh danh tính</h3>
+      <p class="sub">Nộp CCCD và Giấy phép lái xe để xác minh tài khoản — bắt buộc để ký hợp đồng điện tử khi thuê xe. Ảnh chỉ dùng để đối chiếu, không chia sẻ cho bên thứ ba.</p>
+      <div id="verifyStatusBox"></div>
+      <div class="verify-grid">
+        <div class="doc-slot">
+          <div class="doc-thumb" id="thumb-cccd_front">📇</div>
+          <b>CCCD mặt trước</b>
+          <input type="file" accept="image/*" id="file-cccd_front">
+          <span class="doc-state" id="state-cccd_front">Chưa nộp</span>
+        </div>
+        <div class="doc-slot">
+          <div class="doc-thumb" id="thumb-cccd_back">📇</div>
+          <b>CCCD mặt sau</b>
+          <input type="file" accept="image/*" id="file-cccd_back">
+          <span class="doc-state" id="state-cccd_back">Chưa nộp</span>
+        </div>
+        <div class="doc-slot">
+          <div class="doc-thumb" id="thumb-license">🚘</div>
+          <b>Giấy phép lái xe</b>
+          <input type="file" accept="image/*" id="file-license">
+          <span class="doc-state" id="state-license">Chưa nộp</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btnUploadDocs" style="margin-top:16px">Gửi xác minh</button>
+    </div>
+
     <h3 style="font-size:19px;color:var(--ink);margin-bottom:16px">🚗 Đơn thuê xe của bạn</h3>
     <div id="orderList"><div class="empty-box">Đang tải đơn...</div></div>
 
@@ -155,6 +183,24 @@
   </div>
 </footer>
 
+<!-- ===== Modal: Ký hợp đồng điện tử ===== -->
+<div class="modal-backdrop" id="contractModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h3>Hợp đồng thuê xe điện</h3><p class="sub" id="ctMeta">Đọc kỹ nội dung trước khi ký</p></div>
+      <button class="modal-close" data-close>✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="contract-text" id="ctContent">Đang tải...</div>
+      <label class="ct-agree" id="ctAgreeRow">
+        <input type="checkbox" id="ctAgree">
+        <span>Tôi đã đọc, hiểu rõ và đồng ý với toàn bộ nội dung hợp đồng trên.</span>
+      </label>
+      <button class="btn btn-primary btn-block" id="ctSubmit" disabled>Xác nhận ký hợp đồng</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== Nút nổi + toast ===== -->
 <div class="floats">
   <button class="float-btn float-top" id="toTop" aria-label="Lên đầu trang">↑</button>
@@ -175,6 +221,8 @@
   const setInvalid = (id, bad) => { $("#" + id).closest(".field").classList.toggle("invalid", !!bad); return !bad; };
   const fmtTime = (iso) => iso ? new Date(iso).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit", year: "numeric" }) : "";
 
+  let VERIFY = null; // { verifyStatus, verifyNote, uploaded } — nạp qua loadVerify()
+
   // ---------- Giao diện đơn ----------
   function timelineHTML(status) {
     if (status === "cancelled") return "";
@@ -183,6 +231,17 @@
       const cls = i < cur ? "done" : i === cur ? "done cur" : "";
       return `<div class="tl ${cls}"><div class="dot">${i <= cur ? "✓" : ""}</div>${ORDER_STATUS[s].label}</div>`;
     }).join("") + `</div>`;
+  }
+
+  function contractHTML(o, isLocal) {
+    if (isLocal) return "";
+    if (o.contractSignedAt) {
+      return `<div class="ct-box ct-signed">✅ Đã ký hợp đồng lúc ${fmtTime(o.contractSignedAt)}</div>`;
+    }
+    if (VERIFY && VERIFY.verifyStatus === "verified") {
+      return `<div class="ct-box"><button class="btn btn-outline btn-sm" data-contract="${o.code}">📄 Ký hợp đồng điện tử</button></div>`;
+    }
+    return `<div class="ct-box ct-hint">Cần <a href="#verifyPanel" class="ct-link">xác minh CCCD/GPLX</a> ở trên trước khi ký hợp đồng cho đơn này.</div>`;
   }
 
   function orderCard(o, isLocal) {
@@ -202,6 +261,7 @@
         ${o.adminNote ? `<br>📝 <b>TimXeDien nhắn bạn:</b> ${o.adminNote}` : ""}
       </div>
       ${timelineHTML(isLocal ? "new" : o.status)}
+      ${contractHTML(o, isLocal)}
     </div>`;
   }
 
@@ -236,7 +296,7 @@
     $("#acPhone").textContent = user.phone || "";
     $("#pageTitle").textContent = "Chào " + (user.name || "bạn") + " 👋";
     $("#pageLead").textContent = "Theo dõi toàn bộ đơn thuê xe của bạn tại đây. Cần hỗ trợ nhanh, bấm nút Zalo góc màn hình.";
-    loadOrders();
+    loadVerify().then(loadOrders);
   }
 
   // ---------- Gọi API ----------
@@ -261,6 +321,7 @@
       box.innerHTML = orders.length
         ? orders.map((o) => orderCard(o, false)).join("")
         : `<div class="empty-box"><div class="big">🚗</div>Bạn chưa có đơn thuê nào với số điện thoại này.<br>Đặt xe đầu tiên ngay hôm nay!</div>`;
+      $$("[data-contract]", box).forEach((b) => b.addEventListener("click", () => openContract(b.dataset.contract)));
     } catch (e) {
       // Chạy local — hiển thị đơn trên thiết bị
       const arr = localOrders();
@@ -269,6 +330,159 @@
         (arr.length ? arr.map((o) => orderCard(o, true)).join("") : `<div class="empty-box">Chưa có đơn nào trên thiết bị này.</div>`);
     }
   }
+
+  // ---------- Xác minh CCCD / GPLX ----------
+  const DOC_TYPES = ["cccd_front", "cccd_back", "license"];
+  const VERIFY_LABEL = {
+    unverified: { text: "Chưa nộp giấy tờ", cls: "st-unverified" },
+    pending: { text: "⏳ Đang chờ duyệt", cls: "st-pending" },
+    verified: { text: "✅ Đã xác minh", cls: "st-verified" },
+    rejected: { text: "❌ Bị từ chối", cls: "st-rejected" }
+  };
+  const selectedDocs = {}; // docType -> dataURL đã nén, chờ gửi
+
+  function renderVerifyStatus() {
+    const v = VERIFY || { verifyStatus: "unverified", uploaded: {} };
+    const lb = VERIFY_LABEL[v.verifyStatus] || VERIFY_LABEL.unverified;
+    $("#verifyStatusBox").innerHTML =
+      `<span class="verify-pill ${lb.cls}">${lb.text}</span>` +
+      (v.verifyStatus === "rejected" && v.verifyNote
+        ? `<div class="verify-note">Lý do: ${v.verifyNote} — vui lòng chọn lại ảnh và nộp lại bên dưới.</div>`
+        : v.verifyStatus === "pending"
+        ? `<div class="verify-note">TimXeDien sẽ kiểm tra và duyệt trong ít phút đến vài giờ làm việc.</div>`
+        : "");
+    DOC_TYPES.forEach((t) => {
+      const done = (v.uploaded && v.uploaded[t]) || selectedDocs[t];
+      $("#state-" + t).textContent = selectedDocs[t] ? "Đã chọn ảnh mới — bấm Gửi xác minh" : done ? "✓ Đã nộp" : "Chưa nộp";
+      $("#state-" + t).classList.toggle("done", !!done);
+    });
+  }
+
+  async function loadVerify() {
+    try {
+      const r = await fetch("/api/documents", { headers: TXDAuth.header() });
+      const data = await r.json().catch(() => ({}));
+      if (r.ok) VERIFY = data;
+    } catch (e) { /* offline — giữ trạng thái mặc định */ }
+    renderVerifyStatus();
+  }
+
+  function readAndCompress(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          const maxSide = 1600;
+          let w = img.width, h = img.height;
+          if (w > maxSide || h > maxSide) {
+            const scale = maxSide / Math.max(w, h);
+            w = Math.round(w * scale); h = Math.round(h * scale);
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = w; canvas.height = h;
+          canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", 0.82));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  DOC_TYPES.forEach((t) => {
+    $("#file-" + t).addEventListener("change", async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      try {
+        const dataUrl = await readAndCompress(file);
+        selectedDocs[t] = dataUrl;
+        $("#thumb-" + t).innerHTML = `<img src="${dataUrl}" alt="">`;
+        renderVerifyStatus();
+      } catch (err) {
+        toast("Không đọc được ảnh này, vui lòng chọn ảnh khác.");
+      }
+    });
+  });
+
+  $("#btnUploadDocs").addEventListener("click", async () => {
+    const types = Object.keys(selectedDocs);
+    if (!types.length) { toast("Chọn ít nhất 1 ảnh trước khi gửi."); return; }
+    const btn = $("#btnUploadDocs");
+    btn.disabled = true; btn.textContent = "Đang gửi...";
+    try {
+      for (const t of types) {
+        const r = await fetch("/api/documents", {
+          method: "POST", headers: TXDAuth.header(),
+          body: JSON.stringify({ docType: t, dataUrl: selectedDocs[t] })
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.error || "Gửi ảnh thất bại");
+        delete selectedDocs[t];
+      }
+      toast("✅ Đã gửi giấy tờ xác minh — TimXeDien sẽ duyệt sớm nhất.");
+      await loadVerify();
+      loadOrders();
+    } catch (err) {
+      toast("❌ " + (err.message || "Không gửi được, vui lòng thử lại."));
+    }
+    btn.disabled = false; btn.textContent = "Gửi xác minh";
+  });
+
+  // ---------- Ký hợp đồng điện tử ----------
+  let currentContractCode = "";
+
+  async function openContract(code) {
+    currentContractCode = code;
+    $("#ctMeta").textContent = code;
+    $("#ctContent").textContent = "Đang tải nội dung hợp đồng...";
+    $("#ctAgree").checked = false;
+    $("#ctAgree").disabled = false;
+    $("#ctAgreeRow").style.display = "";
+    $("#ctSubmit").disabled = true;
+    $("#ctSubmit").textContent = "Xác nhận ký hợp đồng";
+    TXDPage.openModal("#contractModal");
+
+    try {
+      const r = await fetch("/api/contract?code=" + encodeURIComponent(code), { headers: TXDAuth.header() });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.error || "Không tải được hợp đồng");
+      $("#ctContent").textContent = data.content;
+      if (data.signed) {
+        $("#ctAgreeRow").style.display = "none";
+        $("#ctSubmit").disabled = true;
+        $("#ctSubmit").textContent = "Đã ký lúc " + fmtTime(data.signedAt);
+      }
+    } catch (err) {
+      $("#ctContent").textContent = "Không tải được hợp đồng: " + (err.message || "vui lòng thử lại.");
+    }
+  }
+
+  $("#ctAgree").addEventListener("change", () => {
+    $("#ctSubmit").disabled = !$("#ctAgree").checked;
+  });
+
+  $("#ctSubmit").addEventListener("click", async () => {
+    if (!currentContractCode || !$("#ctAgree").checked) return;
+    const btn = $("#ctSubmit");
+    btn.disabled = true; btn.textContent = "Đang xác nhận...";
+    try {
+      const r = await fetch("/api/contract", {
+        method: "POST", headers: TXDAuth.header(),
+        body: JSON.stringify({ code: currentContractCode })
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.error || "Ký hợp đồng thất bại");
+      toast("✅ Đã ký hợp đồng thành công!");
+      TXDPage.closeModal("#contractModal");
+      loadOrders();
+    } catch (err) {
+      toast("❌ " + (err.message || "Không ký được, vui lòng thử lại."));
+      btn.disabled = false; btn.textContent = "Xác nhận ký hợp đồng";
+    }
+  });
 
   // ---------- Đăng nhập ----------
   $("#loginForm").addEventListener("submit", async (e) => {
