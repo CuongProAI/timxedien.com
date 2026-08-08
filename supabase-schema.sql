@@ -76,6 +76,8 @@ create table if not exists users (
   license_issued_by text,
   address_perm text,
   address_temp text,
+  google_id text unique,
+  email text,
   created_at timestamptz default now()
 );
 

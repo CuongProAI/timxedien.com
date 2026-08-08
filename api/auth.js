@@ -126,6 +126,61 @@ module.exports = async (req, res) => {
       return res.status(200).json({ ok: true });
     }
 
+    // ----- Đăng nhập / đăng ký bằng Google (Google Identity Services idToken) -----
+    if (action === 'google') {
+      const idToken = String(body.idToken || '');
+      const clientId = process.env.GOOGLE_CLIENT_ID || '';
+      if (!idToken) return res.status(400).json({ error: 'Thiếu thông tin đăng nhập Google.' });
+      if (!clientId) return res.status(500).json({ error: 'Đăng nhập Google chưa được cấu hình trên hệ thống.' });
+
+      let payload;
+      try {
+        const gr = await fetch('https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(idToken));
+        if (!gr.ok) throw new Error('bad token');
+        payload = await gr.json();
+      } catch (e) {
+        return res.status(401).json({ error: 'Không xác thực được tài khoản Google, vui lòng thử lại.' });
+      }
+      if (payload.aud !== clientId || !payload.sub) {
+        return res.status(401).json({ error: 'Không xác thực được tài khoản Google, vui lòng thử lại.' });
+      }
+
+      const googleId = String(payload.sub);
+      const email = String(payload.email || '');
+      const gName = String(payload.name || email || 'Khách Google').trim().slice(0, 100);
+
+      const { data: existing, error: exErr } = await supabase.from('users').select('*').eq('google_id', googleId).maybeSingle();
+      if (exErr) throw exErr;
+      if (existing) {
+        return res.status(200).json({ ok: true, token: signToken({ phone: existing.phone, name: existing.name }), user: rowToProfile(existing) });
+      }
+
+      const gPhone = phoneKey(body.phone);
+      if (!gPhone) {
+        return res.status(200).json({ ok: true, needPhone: true, suggestedName: gName });
+      }
+      if (!/^(84|0)\d{9,10}$/.test(gPhone)) {
+        return res.status(400).json({ error: 'Số điện thoại chưa đúng định dạng Việt Nam.' });
+      }
+
+      const { data: byPhone, error: pErr } = await supabase.from('users').select('*').eq('phone', gPhone).maybeSingle();
+      if (pErr) throw pErr;
+
+      if (byPhone) {
+        const { data: linked, error: lErr } = await supabase
+          .from('users').update({ google_id: googleId, email: email || byPhone.email }).eq('phone', gPhone).select().maybeSingle();
+        if (lErr) throw lErr;
+        return res.status(200).json({ ok: true, token: signToken({ phone: linked.phone, name: linked.name }), user: rowToProfile(linked) });
+      }
+
+      const salt = crypto.randomBytes(16).toString('hex');
+      const passHash = hashPass(crypto.randomBytes(24).toString('hex'), salt);
+      const { data: created, error: cErr } = await supabase
+        .from('users').insert({ phone: gPhone, name: gName, salt, pass_hash: passHash, google_id: googleId, email }).select().maybeSingle();
+      if (cErr) throw cErr;
+      return res.status(200).json({ ok: true, token: signToken({ phone: created.phone, name: created.name }), user: rowToProfile(created) });
+    }
+
     const phone = phoneKey(body.phone);
     const password = String(body.password || '');
 

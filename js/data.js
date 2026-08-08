@@ -23,7 +23,10 @@ const CONFIG = {
   discount3Day: 0.05,   // giảm 5% khi thuê từ 3 ngày
   discount7Day: 0.10,   // giảm 10% khi thuê từ 7 ngày
   discount6Month: 0.06, // giảm 6% khi thuê từ 6 tháng
-  discount12Month: 0.12 // giảm 12% khi thuê từ 12 tháng
+  discount12Month: 0.12, // giảm 12% khi thuê từ 12 tháng
+  // Google Client ID cho nút "Đăng nhập với Google" (Google Cloud Console → APIs & Services → Credentials).
+  // Để trống thì nút Google tự ẩn, khách vẫn đăng nhập bằng SĐT + mật khẩu bình thường.
+  googleClientId: ""
 };
 
 // ---- ĐỘI XE CHO THUÊ ----

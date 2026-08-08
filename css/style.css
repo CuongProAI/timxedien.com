@@ -413,7 +413,7 @@ footer{background:var(--ink);color:#aab4b0;padding:56px 0 0;font-size:14px}
 @media (max-width:1080px){
   .rev-nav.prev{left:-10px}.rev-nav.next{right:-10px}
 }
-@media (max-width:1200px){
+@media (max-width:1250px){
   .menu{
     position:fixed;inset:0 0 auto 0;top:0;background:#fff;flex-direction:column;gap:4px;
     padding:86px 24px 26px;box-shadow:var(--shadow-lg);transform:translateY(-110%);
@@ -527,6 +527,15 @@ footer{background:var(--ink);color:#aab4b0;padding:56px 0 0;font-size:14px}
 .panel{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:30px}
 .panel h3{font-size:19px;color:var(--ink);margin-bottom:4px}
 .panel .sub{font-size:13.5px;color:var(--mut);margin-bottom:18px}
+
+/* ---------- Popup đăng nhập / đăng ký ---------- */
+.at-tabs{display:flex;gap:6px;background:var(--mist);border-radius:12px;padding:4px;margin-bottom:20px}
+.at-tab{flex:1;padding:9px 0;border-radius:9px;font-weight:700;font-size:14px;color:var(--mut);transition:.2s}
+.at-tab.active{background:#fff;color:var(--ink);box-shadow:var(--shadow)}
+.at-divider{text-align:center;color:var(--mut);font-size:13px;margin:16px 0;position:relative}
+.at-divider span{background:#fff;padding:0 12px;position:relative;z-index:1}
+.at-divider::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line);z-index:0}
+#amGoogleBtn{display:flex;justify-content:center}
 .hintbox{
   background:rgba(224,142,0,.08);border:1px solid rgba(224,142,0,.3);color:#8a5a0a;
   border-radius:13px;padding:13px 17px;font-size:13.5px;margin-bottom:18px;

@@ -502,7 +502,7 @@
       const st = LEAD_ST[l.status] || LEAD_ST.new;
       return `<div class="card">
         <div class="top">
-          <div><b class="name">${esc(l.name)}</b> · <a href="tel:${esc(l.phone)}">${esc(l.phone)}</a></div>
+          <div><b class="name">${esc(l.name)}</b> · <a href="tel:${esc(l.phone)}">${esc(l.phone)}</a>${l.source === "ky-gui-xe" ? ` <span class="pill" style="background:#7c3aed">🚙 Ký gửi xe</span>` : ""}</div>
           <span class="pill" style="background:${st.color}">${st.label}</span>
         </div>
         <div class="meta">${fmtTime(l.createdAt)} · 🎯 ${esc(l.topic || "(không có chủ đề)")} · nguồn: ${esc(l.source || "")}</div>
