@@ -99,7 +99,7 @@ module.exports = async (req, res) => {
 
     const { data: row, error: insErr } = await supabase
       .from('contracts')
-      .insert({ order_code: code, user_phone: phone, content, ip, user_agent })
+      .insert({ order_code: code, user_phone: phone, content, ip, user_agent: userAgent })
       .select().single();
     if (insErr) throw insErr;
 
