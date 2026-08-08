@@ -26,7 +26,7 @@ const CONFIG = {
   discount12Month: 0.12, // giảm 12% khi thuê từ 12 tháng
   // Google Client ID cho nút "Đăng nhập với Google" (Google Cloud Console → APIs & Services → Credentials).
   // Để trống thì nút Google tự ẩn, khách vẫn đăng nhập bằng SĐT + mật khẩu bình thường.
-  googleClientId: ""
+  googleClientId: "320398873338-0p5k5gtjobjpggv08bdpmi5sqn8igsf4.apps.googleusercontent.com"
 };
 
 // ---- ĐỘI XE CHO THUÊ ----
