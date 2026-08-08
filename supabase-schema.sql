@@ -15,6 +15,12 @@ create table if not exists orders (
   admin_note text,
   user_phone text,
   status text default 'new',
+  car_plate text,
+  car_color text,
+  car_year text,
+  car_reg_no text,
+  car_reg_date date,
+  car_reg_owner text,
   created_at timestamptz default now(),
   updated_at timestamptz
 );
@@ -32,6 +38,14 @@ create table if not exists users (
   verify_status text default 'unverified', -- unverified | pending | verified | rejected
   verify_note text,
   verified_at timestamptz,
+  id_number text,
+  id_issued_at date,
+  id_issued_by text,
+  license_number text,
+  license_issued_at date,
+  license_issued_by text,
+  address_perm text,
+  address_temp text,
   created_at timestamptz default now()
 );
 

@@ -1,11 +1,13 @@
 // API hợp đồng thuê xe điện — sinh nội dung theo đơn + ghi nhận xác nhận điện tử của khách
 // - GET  ?code=TXD-XXX (Bearer token): xem nội dung hợp đồng của đơn (đã ký hay chưa)
 // - POST { code }      (Bearer token): xác nhận ký — yêu cầu tài khoản đã xác minh CCCD/GPLX
+//   và đã điền hồ sơ pháp lý (CCCD, GPLX, địa chỉ) trong trang tài khoản.
 const crypto = require('crypto');
 const { supabase } = require('./_lib');
 
 const SECRET = process.env.SESSION_SECRET || process.env.ADMIN_KEY || 'txd-doi-secret-khi-deploy';
 const phoneKey = (p) => String(p || '').replace(/\D/g, '');
+const BLANK = '……………………';
 
 function verifyToken(token) {
   try {
@@ -18,36 +20,81 @@ function verifyToken(token) {
   } catch (e) { return null; }
 }
 
+const val = (v) => (v ? v : BLANK);
+function fmtDate(d) {
+  if (!d) return BLANK;
+  const dt = new Date(d);
+  return isNaN(dt.getTime()) ? BLANK : dt.toLocaleDateString('vi-VN');
+}
+
 function buildContract(order, user) {
   const now = new Date();
-  return `HỢP ĐỒNG THUÊ XE ĐIỆN
-Số: ${order.code}
-Ngày lập: ${now.toLocaleString('vi-VN')}
+  const total = Number(order.total || 0);
 
-BÊN CHO THUÊ (Bên A): TimXeDien.com
-Hotline: 0939.099.018 · Email: timxedien@gmail.com
+  return `CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+Độc lập - Tự do - Hạnh phúc
+-------------oOo-------------
+
+HỢP ĐỒNG THUÊ XE ĐIỆN TỰ LÁI
+(Số: ${order.code}/HĐCTXTL)
+
+- Căn cứ Bộ luật Dân sự số 91/2015/QH13 có hiệu lực thi hành từ 01/01/2017;
+- Căn cứ Luật Thương mại số 36/2005/QH11 có hiệu lực thi hành từ 01/01/2006;
+
+Hôm nay, ngày ${now.getDate()} tháng ${now.getMonth() + 1} năm ${now.getFullYear()}, tại TP. Cần Thơ, chúng tôi gồm:
+
+BÊN CHO THUÊ XE (BÊN A): TIMXEDIEN.COM
 Địa chỉ: TP. Cần Thơ
+Điện thoại: 0939.099.018
+Email: timxedien@gmail.com
 
-BÊN THUÊ (Bên B):
+BÊN THUÊ XE (BÊN B):
 Họ và tên: ${user.name}
-Số điện thoại: ${user.phone}
+CCCD số: ${val(user.id_number)}  cấp ngày ${fmtDate(user.id_issued_at)}  tại ${val(user.id_issued_by)}
+GPLX số: ${val(user.license_number)}  cấp ngày ${fmtDate(user.license_issued_at)}  tại ${val(user.license_issued_by)}
+Địa chỉ thường trú: ${val(user.address_perm)}
+Địa chỉ tạm trú: ${user.address_temp || '(không có)'}
+Điện thoại: ${user.phone}
 
-THÔNG TIN XE THUÊ
-Xe: ${order.car}
+Sau khi bàn bạc, hai Bên cùng thống nhất ký kết Hợp đồng cho thuê xe ô tô tự lái với các điều khoản sau:
+
+ĐIỀU 1: ĐỐI TƯỢNG HỢP ĐỒNG
+Bên B có nhu cầu thuê xe ô tô điện tự lái và Bên A đồng ý cho Bên B thuê 01 (một) chiếc xe ô tô có thông tin như sau:
+Biển số xe: ${val(order.car_plate)}       Nhãn hiệu: ${order.car}
+Sản xuất năm: ${val(order.car_year)}       Màu: ${val(order.car_color)}
+Giấy đăng ký ô tô số: ${val(order.car_reg_no)}    Ngày cấp: ${fmtDate(order.car_reg_date)}    Tên chủ xe: ${order.car_reg_owner || 'TimXeDien.com'}
+
+ĐIỀU 2: THỜI GIAN THUÊ, PHỤ PHÍ PHÁT SINH
 Thời gian thuê: ${order.time_range}
-Điểm nhận xe: ${order.pickup}
-Tổng giá thuê (tạm tính): ${Number(order.total || 0).toLocaleString('vi-VN')}đ
+Phụ phí phát sinh (nếu có): tính theo bảng giá hiện hành của Bên A đối với phần vượt giới hạn km hoặc vượt thời gian thuê đã thoả thuận.
 
-ĐIỀU KHOẢN
-1. Bên B cam kết đã cung cấp CCCD và Giấy phép lái xe hợp lệ, đúng sự thật, chịu trách nhiệm trước pháp luật về tính chính xác của giấy tờ đã cung cấp và đã được TimXeDien.com xác minh.
-2. Bên B có trách nhiệm sử dụng xe đúng mục đích, không giao xe cho người khác điều khiển, không dùng xe vào mục đích vi phạm pháp luật.
-3. Tiền cọc giữ chỗ được trừ vào tổng tiền thuê; cọc trách nhiệm (nếu có) hoàn lại đầy đủ khi trả xe không phát sinh hư hỏng, vi phạm.
-4. Xe hư hỏng, mất mát do lỗi Bên B trong thời gian thuê — Bên B bồi thường theo giá trị thực tế.
-5. Bên A đảm bảo xe hoạt động tốt tại thời điểm giao xe; hỗ trợ đổi xe hoặc hoàn phần tiền chưa sử dụng nếu xe gặp sự cố không do lỗi Bên B.
-6. Hợp đồng có hiệu lực kể từ thời điểm Bên B xác nhận điện tử dưới đây cho đến khi hoàn tất trả xe.
+ĐIỀU 3: GIÁ TRỊ HỢP ĐỒNG, HÌNH THỨC THANH TOÁN
+Đơn giá thuê xe: theo bảng giá Bên A công bố tại thời điểm đặt xe (${order.mode === 'month' ? 'tính theo tháng' : 'tính theo ngày'}).
+Giá trị hợp đồng (tạm tính): ${total.toLocaleString('vi-VN')}đ
+Hình thức thanh toán: Bên B đã thanh toán tiền cọc giữ chỗ 500.000đ (trừ vào giá trị hợp đồng); số tiền còn lại Bên B thanh toán cho Bên A khi nhận xe bằng tiền mặt hoặc chuyển khoản.
+
+ĐIỀU 4: QUYỀN VÀ NGHĨA VỤ CỦA BÊN A
+1. Giao xe đúng tình trạng, đủ giấy tờ hợp lệ, sạc đầy pin tại thời điểm giao xe cho Bên B.
+2. Hướng dẫn Bên B sử dụng xe, hệ thống sạc và cách xử lý tình huống khẩn cấp.
+3. Hỗ trợ cứu hộ, đổi xe tương đương nếu xe gặp sự cố kỹ thuật không do lỗi Bên B.
+4. Hoàn trả đầy đủ tiền cọc trách nhiệm (nếu có) khi Bên B trả xe đúng thoả thuận, không phát sinh hư hỏng.
+
+ĐIỀU 5: QUYỀN VÀ NGHĨA VỤ CỦA BÊN B
+1. Sử dụng xe đúng mục đích, đúng người đứng tên hợp đồng, không giao xe cho người khác điều khiển.
+2. Không sử dụng xe vào mục đích vi phạm pháp luật, vận chuyển hàng cấm, đua xe.
+3. Bảo quản xe, chịu trách nhiệm bồi thường theo giá trị thực tế nếu xe hư hỏng, mất mát do lỗi của Bên B trong thời gian thuê.
+4. Trả xe đúng thời gian, địa điểm đã thoả thuận; báo ngay cho Bên A qua hotline nếu có sự cố phát sinh.
+5. Thanh toán đầy đủ, đúng hạn giá trị hợp đồng và các khoản phụ phí phát sinh (nếu có) cho Bên A.
+
+ĐIỀU 6: ĐIỀU KHOẢN CHUNG
+Hợp đồng này được lập dưới hình thức điện tử. Việc Bên B xác nhận đồng ý bằng thao tác điện tử (tích chọn và xác nhận trên hệ thống TimXeDien.com) có giá trị pháp lý tương đương chữ ký tay, theo quy định của Luật Giao dịch điện tử. Hợp đồng có hiệu lực kể từ thời điểm Bên B xác nhận điện tử cho đến khi hai Bên hoàn tất thủ tục trả xe.
 
 XÁC NHẬN ĐIỆN TỬ CỦA BÊN B
-Bằng việc bấm "Xác nhận ký hợp đồng", Bên B xác nhận đã đọc, hiểu rõ và đồng ý với toàn bộ nội dung trên.`;
+Bằng việc bấm "Xác nhận ký hợp đồng", Bên B xác nhận đã đọc, hiểu rõ và đồng ý với toàn bộ nội dung Hợp đồng nêu trên.`;
+}
+
+function legalComplete(user) {
+  return !!(String(user.id_number || '').trim() && String(user.license_number || '').trim() && String(user.address_perm || '').trim());
 }
 
 module.exports = async (req, res) => {
@@ -78,6 +125,7 @@ module.exports = async (req, res) => {
       return res.status(200).json({
         ok: true,
         verifyStatus: user.verify_status,
+        legalComplete: legalComplete(user),
         signed: !!existing,
         signedAt: existing ? existing.signed_at : null,
         content: existing ? existing.content : buildContract(order, user)
@@ -91,6 +139,9 @@ module.exports = async (req, res) => {
     }
     if (user.verify_status !== 'verified') {
       return res.status(403).json({ error: 'Tài khoản chưa xác minh CCCD/GPLX — vui lòng nộp và chờ duyệt trước khi ký hợp đồng.' });
+    }
+    if (!legalComplete(user)) {
+      return res.status(400).json({ error: 'Vui lòng hoàn thiện hồ sơ pháp lý (số CCCD, GPLX, địa chỉ thường trú) trong trang tài khoản trước khi ký hợp đồng.' });
     }
 
     const content = buildContract(order, user);

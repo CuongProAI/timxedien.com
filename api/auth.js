@@ -30,6 +30,17 @@ function hashPass(password, salt) {
   return crypto.scryptSync(String(password), salt, 64).toString('hex');
 }
 
+// Thông tin tài khoản trả về cho khách — không bao giờ gồm salt/pass_hash
+function rowToProfile(u) {
+  return {
+    name: u.name, phone: u.phone, createdAt: u.created_at,
+    idNumber: u.id_number, idIssuedAt: u.id_issued_at, idIssuedBy: u.id_issued_by,
+    licenseNumber: u.license_number, licenseIssuedAt: u.license_issued_at, licenseIssuedBy: u.license_issued_by,
+    addressPerm: u.address_perm, addressTemp: u.address_temp,
+    verifyStatus: u.verify_status
+  };
+}
+
 module.exports = async (req, res) => {
   try {
     // GET + Authorization → thông tin tài khoản hiện tại
@@ -37,11 +48,11 @@ module.exports = async (req, res) => {
       const auth = verifyToken((req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
       if (!auth) return res.status(401).json({ error: 'Phiên đăng nhập hết hạn' });
       const { data: user, error } = await supabase
-        .from('users').select('name, phone, created_at')
+        .from('users').select('*')
         .eq('phone', phoneKey(auth.p)).maybeSingle();
       if (error) throw error;
       if (!user) return res.status(404).json({ error: 'Không tìm thấy tài khoản' });
-      return res.status(200).json({ ok: true, user: { name: user.name, phone: user.phone, createdAt: user.created_at } });
+      return res.status(200).json({ ok: true, user: rowToProfile(user) });
     }
 
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -65,6 +76,29 @@ module.exports = async (req, res) => {
         token: signToken({ phone: user.phone, name: user.name }),
         user: { name: user.name, phone: user.phone }
       });
+    }
+
+    // ----- Cập nhật hồ sơ pháp lý: CCCD, GPLX, địa chỉ (cần đăng nhập) -----
+    if (action === 'update-legal') {
+      const auth = verifyToken((req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
+      if (!auth) return res.status(401).json({ error: 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.' });
+
+      const clip = (v, n) => String(v || '').trim().slice(0, n);
+      const patch = {
+        id_number: clip(body.idNumber, 20),
+        id_issued_at: body.idIssuedAt || null,
+        id_issued_by: clip(body.idIssuedBy, 150),
+        license_number: clip(body.licenseNumber, 20),
+        license_issued_at: body.licenseIssuedAt || null,
+        license_issued_by: clip(body.licenseIssuedBy, 150),
+        address_perm: clip(body.addressPerm, 250),
+        address_temp: clip(body.addressTemp, 250)
+      };
+      const { data: user, error } = await supabase
+        .from('users').update(patch).eq('phone', phoneKey(auth.p)).select().maybeSingle();
+      if (error) throw error;
+      if (!user) return res.status(404).json({ error: 'Không tìm thấy tài khoản' });
+      return res.status(200).json({ ok: true, user: rowToProfile(user) });
     }
 
     // ----- Đổi mật khẩu (cần đăng nhập) -----
@@ -126,7 +160,7 @@ module.exports = async (req, res) => {
       if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
         return res.status(401).json({ error: 'Mật khẩu chưa đúng.' });
       }
-      return res.status(200).json({ ok: true, token: signToken({ phone: user.phone, name: user.name }), user: { name: user.name, phone: user.phone } });
+      return res.status(200).json({ ok: true, token: signToken({ phone: user.phone, name: user.name }), user: rowToProfile(user) });
     }
 
     return res.status(400).json({ error: 'Hành động không hợp lệ' });

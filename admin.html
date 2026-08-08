@@ -343,6 +343,8 @@
 📍 ${esc(o.pickup)}
 💰 Tạm tính: ${fmt(o.total)}${o.note ? "\n💬 Khách nhắn: " + esc(o.note) : ""}</div>
         ${o.adminNote ? `<div class="msg note">📝 Ghi chú gửi khách: ${esc(o.adminNote)}</div>` : ""}
+        ${o.contractSignedAt ? `<div class="msg note">📄 Đã ký hợp đồng lúc ${fmtTime(o.contractSignedAt)}</div>` : ""}
+        ${o.carPlate || o.carRegNo ? `<div class="meta">🔖 Biển số: ${esc(o.carPlate || "(chưa có)")} · Màu: ${esc(o.carColor || "-")} · Đăng ký xe: ${esc(o.carRegNo || "-")}</div>` : ""}
         <div class="acts">
           <a href="tel:${esc(o.phone)}">📞 Gọi</a>
           <a href="https://zalo.me/${digits(o.phone)}" target="_blank" rel="noopener">💬 Zalo</a>
@@ -351,7 +353,21 @@
             ${Object.keys(ORDER_STATUS).map((k) => `<option value="${k}" ${o.status === k ? "selected" : ""}>${ORDER_STATUS[k].icon} ${ORDER_STATUS[k].label}</option>`).join("")}
           </select>
           <button class="btn sm ghost" data-note="${esc(o.code)}">📝 Ghi chú gửi khách</button>
+          <button class="btn sm ghost" data-vehtoggle="${esc(o.code)}">🚙 Thông tin xe</button>
           <button class="btn sm danger" data-del="${esc(o.code)}">Xóa</button>
+        </div>
+        <div class="veh-form" id="veh-${esc(o.code)}" style="display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)">
+          <div class="bar">
+            <input class="inp" style="min-width:140px" placeholder="Biển số xe" data-vf="plate" value="${esc(o.carPlate || "")}">
+            <input class="inp" style="min-width:110px" placeholder="Màu xe" data-vf="color" value="${esc(o.carColor || "")}">
+            <input class="inp" style="min-width:90px" placeholder="Năm SX" data-vf="year" value="${esc(o.carYear || "")}">
+          </div>
+          <div class="bar">
+            <input class="inp" style="min-width:180px" placeholder="Số giấy đăng ký xe" data-vf="regNo" value="${esc(o.carRegNo || "")}">
+            <input class="inp" type="date" style="min-width:150px" data-vf="regDate" value="${o.carRegDate || ""}">
+            <input class="inp" style="min-width:180px" placeholder="Tên chủ xe (VD: TimXeDien.com)" data-vf="regOwner" value="${esc(o.carRegOwner || "")}">
+          </div>
+          <button class="btn sm" data-vehsave="${esc(o.code)}">Lưu thông tin xe</button>
         </div>
       </div>`;
     }).join("");
@@ -370,6 +386,22 @@
       const note = prompt("Ghi chú gửi khách (khách thấy trong trang tài khoản):", (o && o.adminNote) || "");
       if (note === null) return;
       await api("/api/orders", "POST", { action: "note", code: b.dataset.note, note });
+      await loadAll(true);
+    }));
+    $$("#orderList [data-vehtoggle]").forEach((b) => b.addEventListener("click", () => {
+      const el = $("#veh-" + b.dataset.vehtoggle);
+      el.style.display = el.style.display === "none" ? "" : "none";
+    }));
+    $$("#orderList [data-vehsave]").forEach((b) => b.addEventListener("click", async () => {
+      const code = b.dataset.vehsave;
+      const box = $("#veh-" + code);
+      const get = (f) => box.querySelector(`[data-vf="${f}"]`).value.trim();
+      b.disabled = true; b.textContent = "Đang lưu...";
+      await api("/api/orders", "POST", {
+        action: "vehicle", code,
+        plate: get("plate"), color: get("color"), year: get("year"),
+        regNo: get("regNo"), regDate: get("regDate"), regOwner: get("regOwner")
+      });
       await loadAll(true);
     }));
     $$("#orderList [data-del]").forEach((b) => b.addEventListener("click", async () => {

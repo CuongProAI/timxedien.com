@@ -167,6 +167,51 @@
       </form>
     </div>
 
+    <!-- ===== Hồ sơ pháp lý ===== -->
+    <div class="panel" id="legalPanel" style="margin-bottom:28px">
+      <h3>📋 Hồ sơ pháp lý</h3>
+      <p class="sub">Điền đúng theo CCCD và Giấy phép lái xe — thông tin này dùng để lập hợp đồng thuê xe điện tử, cần điền đầy đủ trước khi ký hợp đồng.</p>
+      <form id="legalForm" novalidate>
+        <div class="field-row">
+          <div class="field">
+            <label>Số CCCD</label>
+            <input type="text" id="lgIdNumber" placeholder="VD: 092201012345">
+          </div>
+          <div class="field">
+            <label>Ngày cấp CCCD</label>
+            <input type="date" id="lgIdIssuedAt">
+          </div>
+        </div>
+        <div class="field">
+          <label>Nơi cấp CCCD</label>
+          <input type="text" id="lgIdIssuedBy" placeholder="VD: Cục Cảnh sát QLHC về TTXH">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Số GPLX</label>
+            <input type="text" id="lgLicenseNumber" placeholder="VD: 123456789012">
+          </div>
+          <div class="field">
+            <label>Ngày cấp GPLX</label>
+            <input type="date" id="lgLicenseIssuedAt">
+          </div>
+        </div>
+        <div class="field">
+          <label>Nơi cấp GPLX</label>
+          <input type="text" id="lgLicenseIssuedBy" placeholder="VD: Sở GTVT TP. Cần Thơ">
+        </div>
+        <div class="field">
+          <label>Địa chỉ thường trú</label>
+          <input type="text" id="lgAddressPerm" placeholder="Theo CCCD">
+        </div>
+        <div class="field">
+          <label>Địa chỉ tạm trú (nếu có)</label>
+          <input type="text" id="lgAddressTemp" placeholder="Không bắt buộc">
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm" id="btnSaveLegal">Lưu hồ sơ pháp lý</button>
+      </form>
+    </div>
+
     <!-- ===== Xác minh danh tính ===== -->
     <div class="panel" id="verifyPanel" style="margin-bottom:28px">
       <h3>🪪 Xác minh danh tính</h3>
@@ -262,6 +307,9 @@
   const fmtTime = (iso) => iso ? new Date(iso).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit", year: "numeric" }) : "";
 
   let VERIFY = null; // { verifyStatus, verifyNote, uploaded } — nạp qua loadVerify()
+  let LEGAL = null; // hồ sơ pháp lý đầy đủ (CCCD/GPLX/địa chỉ) — nạp qua loadProfile()
+
+  const legalComplete = () => !!(LEGAL && LEGAL.idNumber && LEGAL.licenseNumber && LEGAL.addressPerm);
 
   // ---------- Giao diện đơn ----------
   function timelineHTML(status) {
@@ -278,8 +326,11 @@
     if (o.contractSignedAt) {
       return `<div class="ct-box ct-signed">✅ Đã ký hợp đồng lúc ${fmtTime(o.contractSignedAt)}</div>`;
     }
-    if (VERIFY && VERIFY.verifyStatus === "verified") {
+    if (VERIFY && VERIFY.verifyStatus === "verified" && legalComplete()) {
       return `<div class="ct-box"><button class="btn btn-outline btn-sm" data-contract="${o.code}">📄 Ký hợp đồng điện tử</button></div>`;
+    }
+    if (VERIFY && VERIFY.verifyStatus === "verified") {
+      return `<div class="ct-box ct-hint">Cần điền đầy đủ <a href="#legalPanel" class="ct-link">hồ sơ pháp lý (CCCD/GPLX)</a> ở trên trước khi ký hợp đồng cho đơn này.</div>`;
     }
     return `<div class="ct-box ct-hint">Cần <a href="#verifyPanel" class="ct-link">xác minh CCCD/GPLX</a> ở trên trước khi ký hợp đồng cho đơn này.</div>`;
   }
@@ -338,8 +389,60 @@
     $("#pfPhone").value = user.phone || "";
     $("#pageTitle").textContent = "Chào " + (user.name || "bạn") + " 👋";
     $("#pageLead").textContent = "Theo dõi toàn bộ đơn thuê xe của bạn tại đây. Cần hỗ trợ nhanh, bấm nút Zalo góc màn hình.";
-    loadVerify().then(loadOrders);
+    Promise.all([loadProfile(), loadVerify()]).then(loadOrders);
   }
+
+  // ---------- Hồ sơ pháp lý (CCCD/GPLX/địa chỉ) ----------
+  function fillLegalForm() {
+    const l = LEGAL || {};
+    $("#lgIdNumber").value = l.idNumber || "";
+    $("#lgIdIssuedAt").value = l.idIssuedAt || "";
+    $("#lgIdIssuedBy").value = l.idIssuedBy || "";
+    $("#lgLicenseNumber").value = l.licenseNumber || "";
+    $("#lgLicenseIssuedAt").value = l.licenseIssuedAt || "";
+    $("#lgLicenseIssuedBy").value = l.licenseIssuedBy || "";
+    $("#lgAddressPerm").value = l.addressPerm || "";
+    $("#lgAddressTemp").value = l.addressTemp || "";
+  }
+
+  async function loadProfile() {
+    try {
+      const r = await fetch("/api/auth", { headers: TXDAuth.header() });
+      const data = await r.json().catch(() => ({}));
+      if (r.ok) LEGAL = data.user;
+    } catch (e) { /* offline — giữ trạng thái mặc định */ }
+    fillLegalForm();
+  }
+
+  $("#legalForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = $("#btnSaveLegal");
+    btn.disabled = true; btn.textContent = "Đang lưu...";
+    try {
+      const r = await fetch("/api/auth", {
+        method: "POST", headers: TXDAuth.header(),
+        body: JSON.stringify({
+          action: "update-legal",
+          idNumber: $("#lgIdNumber").value.trim(),
+          idIssuedAt: $("#lgIdIssuedAt").value,
+          idIssuedBy: $("#lgIdIssuedBy").value.trim(),
+          licenseNumber: $("#lgLicenseNumber").value.trim(),
+          licenseIssuedAt: $("#lgLicenseIssuedAt").value,
+          licenseIssuedBy: $("#lgLicenseIssuedBy").value.trim(),
+          addressPerm: $("#lgAddressPerm").value.trim(),
+          addressTemp: $("#lgAddressTemp").value.trim()
+        })
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.error || "Không lưu được, vui lòng thử lại.");
+      LEGAL = data.user;
+      toast("✅ Đã lưu hồ sơ pháp lý.");
+      loadOrders();
+    } catch (err) {
+      toast("❌ " + err.message);
+    }
+    btn.disabled = false; btn.textContent = "Lưu hồ sơ pháp lý";
+  });
 
   // ---------- Gọi API ----------
   async function apiAuth(body) {

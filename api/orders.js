@@ -27,6 +27,8 @@ function rowToOrder(r) {
     code: r.code, name: r.name, phone: r.phone, car: r.car, carId: r.car_id,
     mode: r.mode, time: r.time_range, pickup: r.pickup, total: Number(r.total) || 0,
     note: r.note, adminNote: r.admin_note, userPhone: r.user_phone, status: r.status,
+    carPlate: r.car_plate, carColor: r.car_color, carYear: r.car_year,
+    carRegNo: r.car_reg_no, carRegDate: r.car_reg_date, carRegOwner: r.car_reg_owner,
     createdAt: r.created_at, updatedAt: r.updated_at
   };
 }
@@ -102,6 +104,13 @@ module.exports = async (req, res) => {
         patch.status = body.status;
       } else if (body.action === 'note') {
         patch.admin_note = String(body.note || '').slice(0, 500);
+      } else if (body.action === 'vehicle') {
+        patch.car_plate = String(body.plate || '').trim().slice(0, 20);
+        patch.car_color = String(body.color || '').trim().slice(0, 40);
+        patch.car_year = String(body.year || '').trim().slice(0, 10);
+        patch.car_reg_no = String(body.regNo || '').trim().slice(0, 40);
+        patch.car_reg_date = body.regDate || null;
+        patch.car_reg_owner = String(body.regOwner || '').trim().slice(0, 150);
       } else {
         return res.status(400).json({ error: 'Hành động không hợp lệ' });
       }
