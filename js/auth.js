@@ -32,12 +32,13 @@ window.TXDAuth = (function () {
   function updateNav() {
     const u = user();
     document.querySelectorAll(".nav-account").forEach((a) => {
+      const label = a.querySelector(".acct-label") || a;
       if (u && u.name) {
         const first = u.name.trim().split(/\s+/).pop();
-        a.textContent = "👤 " + first;
+        label.textContent = label === a ? "👤 " + first : " " + first;
         a.title = "Tài khoản của " + u.name;
       } else {
-        a.textContent = "👤 Tài khoản";
+        label.textContent = label === a ? "👤 Tài khoản" : " Tài khoản";
       }
     });
   }
