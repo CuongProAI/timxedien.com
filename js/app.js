@@ -447,7 +447,6 @@
     $("#lkQuery").value = "";
     openModal("#lookupModal");
   }
-  $("#lookupLink").addEventListener("click", openLookup);
   $("#lookupLinkFoot").addEventListener("click", openLookup);
   $("#lkBtn").addEventListener("click", () => {
     const qr = $("#lkQuery").value.trim().toUpperCase();
