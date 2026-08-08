@@ -574,6 +574,7 @@
             <button class="btn sm" data-verify="${esc(u.phone)}">✅ Duyệt</button>
             <button class="btn danger sm" data-reject="${esc(u.phone)}">✖ Từ chối</button>
           ` : ""}
+          <button class="btn danger sm" data-udel="${esc(u.phone)}">🗑 Xóa tài khoản</button>
         </div>
       </div>`;
     }).join("");
@@ -594,6 +595,11 @@
       const note = prompt("Lý do từ chối (khách sẽ thấy lý do này để nộp lại):", "Ảnh mờ, vui lòng chụp rõ hơn");
       if (note === null) return;
       await api("/api/users", "POST", { action: "verify", phone: b.dataset.reject, status: "rejected", note });
+      await loadAll(true);
+    }));
+    $$("#userList [data-udel]").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm("Xóa tài khoản này? Đơn thuê đã đặt trước đó vẫn được giữ nguyên, chỉ mất tài khoản đăng nhập.")) return;
+      await api("/api/users", "POST", { action: "delete", phone: b.dataset.udel });
       await loadAll(true);
     }));
   }

@@ -52,6 +52,13 @@ module.exports = async (req, res) => {
       return res.status(200).json({ ok: true, url: signed.signedUrl });
     }
 
+    // ----- Xoá tài khoản (dọn tài khoản rác/test — không xoá đơn đã gắn số điện thoại này) -----
+    if (action === 'delete') {
+      const { error } = await supabase.from('users').delete().eq('phone', phone);
+      if (error) throw error;
+      return res.status(200).json({ ok: true });
+    }
+
     // ----- Duyệt / từ chối xác minh -----
     if (action === 'verify') {
       const status = body.status === 'verified' ? 'verified' : body.status === 'rejected' ? 'rejected' : null;
