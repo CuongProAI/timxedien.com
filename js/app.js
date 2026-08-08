@@ -395,6 +395,14 @@
     })
   );
 
+  // ---------- Khuyến mãi ----------
+  const promoTrack = $("#promoTrack");
+  if (promoTrack) {
+    const promoStep = () => (promoTrack.querySelector(".promo-card")?.offsetWidth || 300) + 20;
+    $("#promoPrev").addEventListener("click", () => promoTrack.scrollBy({ left: -promoStep(), behavior: "smooth" }));
+    $("#promoNext").addEventListener("click", () => promoTrack.scrollBy({ left: promoStep(), behavior: "smooth" }));
+  }
+
   // ---------- Đánh giá ----------
   let revIdx = 0, revTimer;
   function renderReviews() {
