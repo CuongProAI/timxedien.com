@@ -225,7 +225,7 @@
   let googleReady = false;
   function initGoogle() {
     if (googleReady) return;
-    if (!window.CONFIG || !CONFIG.googleClientId || !window.google || !google.accounts) return;
+    if (typeof CONFIG === "undefined" || !CONFIG.googleClientId || !window.google || !google.accounts) return;
     const modal = ensureModal();
     google.accounts.id.initialize({ client_id: CONFIG.googleClientId, callback: handleGoogleCredential });
     $("#amGoogleBox", modal).style.display = "";
