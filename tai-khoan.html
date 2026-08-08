@@ -127,6 +127,46 @@
       <button class="btn btn-outline btn-sm" id="btnLogout" style="margin-left:0">Đăng xuất</button>
     </div>
 
+    <!-- ===== Thông tin cá nhân ===== -->
+    <div class="panel" id="profilePanel" style="margin-bottom:28px">
+      <h3>✏️ Thông tin cá nhân</h3>
+      <p class="sub">Cập nhật họ tên hoặc đổi mật khẩu đăng nhập của bạn.</p>
+      <form id="profileForm" novalidate>
+        <div class="field-row">
+          <div class="field">
+            <label>Họ và tên</label>
+            <input type="text" id="pfName" placeholder="VD: Nguyễn Văn An">
+            <div class="err">Vui lòng nhập họ tên</div>
+          </div>
+          <div class="field">
+            <label>Số điện thoại</label>
+            <input type="text" id="pfPhone" disabled>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm" id="btnSaveName">Lưu họ tên</button>
+        <p class="sub" style="margin:6px 0 0">Cần đổi số điện thoại? Gọi <a href="tel:0939099018" style="color:var(--green-d);font-weight:700">0939.099.018</a>.</p>
+      </form>
+
+      <div style="height:1px;background:var(--line);margin:24px 0"></div>
+
+      <p class="sub" style="margin-bottom:14px;font-weight:600;color:var(--ink)">Đổi mật khẩu</p>
+      <form id="passForm" novalidate>
+        <div class="field-row">
+          <div class="field">
+            <label>Mật khẩu hiện tại</label>
+            <input type="password" id="pfCurPass" autocomplete="current-password">
+            <div class="err">Vui lòng nhập mật khẩu hiện tại</div>
+          </div>
+          <div class="field">
+            <label>Mật khẩu mới</label>
+            <input type="password" id="pfNewPass" placeholder="Tối thiểu 6 ký tự" autocomplete="new-password">
+            <div class="err">Mật khẩu mới cần tối thiểu 6 ký tự</div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-outline btn-sm" id="btnChangePass">Đổi mật khẩu</button>
+      </form>
+    </div>
+
     <!-- ===== Xác minh danh tính ===== -->
     <div class="panel" id="verifyPanel" style="margin-bottom:28px">
       <h3>🪪 Xác minh danh tính</h3>
@@ -294,6 +334,8 @@
     $("#acAvatar").textContent = (user.name || "K").trim().charAt(0).toUpperCase();
     $("#acName").textContent = user.name || "Khách hàng";
     $("#acPhone").textContent = user.phone || "";
+    $("#pfName").value = user.name || "";
+    $("#pfPhone").value = user.phone || "";
     $("#pageTitle").textContent = "Chào " + (user.name || "bạn") + " 👋";
     $("#pageLead").textContent = "Theo dõi toàn bộ đơn thuê xe của bạn tại đây. Cần hỗ trợ nhanh, bấm nút Zalo góc màn hình.";
     loadVerify().then(loadOrders);
@@ -350,6 +392,8 @@
         ? `<div class="verify-note">Lý do: ${v.verifyNote} — vui lòng chọn lại ảnh và nộp lại bên dưới.</div>`
         : v.verifyStatus === "pending"
         ? `<div class="verify-note">TimXeDien sẽ kiểm tra và duyệt trong ít phút đến vài giờ làm việc.</div>`
+        : v.verifyStatus === "verified"
+        ? `<div class="verify-note">Giấy tờ cũ đã hết hạn hoặc cần cập nhật? Chọn ảnh mới bên dưới và bấm Gửi xác minh — tài khoản sẽ chờ duyệt lại.</div>`
         : "");
     DOC_TYPES.forEach((t) => {
       const done = (v.uploaded && v.uploaded[t]) || selectedDocs[t];
@@ -482,6 +526,58 @@
       toast("❌ " + (err.message || "Không ký được, vui lòng thử lại."));
       btn.disabled = false; btn.textContent = "Xác nhận ký hợp đồng";
     }
+  });
+
+  // ---------- Thông tin cá nhân ----------
+  $("#profileForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = $("#pfName").value.trim();
+    if (!setInvalid("pfName", !name)) return;
+    const btn = $("#btnSaveName");
+    btn.disabled = true; btn.textContent = "Đang lưu...";
+    try {
+      const r = await fetch("/api/auth", {
+        method: "POST", headers: TXDAuth.header(),
+        body: JSON.stringify({ action: "update-name", name })
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.error || "Không lưu được, vui lòng thử lại.");
+      TXDAuth.save(data.token, data.user);
+      $("#acName").textContent = data.user.name;
+      $("#pageTitle").textContent = "Chào " + data.user.name + " 👋";
+      toast("✅ Đã cập nhật họ tên.");
+    } catch (err) {
+      toast("❌ " + err.message);
+    }
+    btn.disabled = false; btn.textContent = "Lưu họ tên";
+  });
+
+  // ---------- Đổi mật khẩu ----------
+  $("#passForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const curPass = $("#pfCurPass").value;
+    const newPass = $("#pfNewPass").value;
+    let ok = setInvalid("pfCurPass", !curPass);
+    ok = setInvalid("pfNewPass", newPass.length < 6) && ok;
+    if (!ok) return;
+    const btn = $("#btnChangePass");
+    btn.disabled = true; btn.textContent = "Đang đổi...";
+    try {
+      const r = await fetch("/api/auth", {
+        method: "POST", headers: TXDAuth.header(),
+        body: JSON.stringify({ action: "change-password", currentPassword: curPass, newPassword: newPass })
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        if (r.status === 401) setInvalid("pfCurPass", true);
+        throw new Error(data.error || "Không đổi được mật khẩu.");
+      }
+      $("#passForm").reset();
+      toast("✅ Đã đổi mật khẩu thành công.");
+    } catch (err) {
+      toast("❌ " + err.message);
+    }
+    btn.disabled = false; btn.textContent = "Đổi mật khẩu";
   });
 
   // ---------- Đăng nhập ----------

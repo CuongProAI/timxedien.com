@@ -48,6 +48,50 @@ module.exports = async (req, res) => {
 
     const body = req.body || {};
     const action = String(body.action || '');
+
+    // ----- Cập nhật họ tên (cần đăng nhập) -----
+    if (action === 'update-name') {
+      const auth = verifyToken((req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
+      if (!auth) return res.status(401).json({ error: 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.' });
+      const name = String(body.name || '').trim().slice(0, 100);
+      if (!name) return res.status(400).json({ error: 'Vui lòng nhập họ tên.' });
+
+      const { data: user, error } = await supabase
+        .from('users').update({ name }).eq('phone', phoneKey(auth.p)).select().maybeSingle();
+      if (error) throw error;
+      if (!user) return res.status(404).json({ error: 'Không tìm thấy tài khoản' });
+      return res.status(200).json({
+        ok: true,
+        token: signToken({ phone: user.phone, name: user.name }),
+        user: { name: user.name, phone: user.phone }
+      });
+    }
+
+    // ----- Đổi mật khẩu (cần đăng nhập) -----
+    if (action === 'change-password') {
+      const auth = verifyToken((req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
+      if (!auth) return res.status(401).json({ error: 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.' });
+      const curPass = String(body.currentPassword || '');
+      const newPass = String(body.newPassword || '');
+      if (newPass.length < 6) return res.status(400).json({ error: 'Mật khẩu mới cần tối thiểu 6 ký tự.' });
+
+      const { data: user, error } = await supabase.from('users').select('*').eq('phone', phoneKey(auth.p)).maybeSingle();
+      if (error) throw error;
+      if (!user) return res.status(404).json({ error: 'Không tìm thấy tài khoản' });
+
+      const tryHash = hashPass(curPass, user.salt);
+      const a = Buffer.from(tryHash), b = Buffer.from(user.pass_hash);
+      if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+        return res.status(401).json({ error: 'Mật khẩu hiện tại chưa đúng.' });
+      }
+
+      const salt = crypto.randomBytes(16).toString('hex');
+      const passHash = hashPass(newPass, salt);
+      const { error: upErr } = await supabase.from('users').update({ salt, pass_hash: passHash }).eq('phone', user.phone);
+      if (upErr) throw upErr;
+      return res.status(200).json({ ok: true });
+    }
+
     const phone = phoneKey(body.phone);
     const password = String(body.password || '');
 
