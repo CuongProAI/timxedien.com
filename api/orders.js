@@ -29,6 +29,7 @@ function rowToOrder(r) {
     note: r.note, adminNote: r.admin_note, userPhone: r.user_phone, status: r.status,
     carPlate: r.car_plate, carColor: r.car_color, carYear: r.car_year,
     carRegNo: r.car_reg_no, carRegDate: r.car_reg_date, carRegOwner: r.car_reg_owner,
+    vehicleId: r.vehicle_id,
     createdAt: r.created_at, updatedAt: r.updated_at
   };
 }
@@ -93,24 +94,56 @@ module.exports = async (req, res) => {
       if (!/^TXD-[A-Z0-9]{4,10}$/.test(code)) return res.status(400).json({ error: 'Mã đơn không hợp lệ' });
 
       if (body.action === 'delete') {
+        const { data: existing } = await supabase.from('orders').select('vehicle_id').eq('code', code).maybeSingle();
+        if (existing && existing.vehicle_id) {
+          await supabase.from('vehicles').update({ status: 'available' }).eq('id', existing.vehicle_id);
+        }
         const { error } = await supabase.from('orders').delete().eq('code', code);
         if (error) throw error;
         return res.status(200).json({ ok: true });
       }
 
       const patch = { updated_at: new Date().toISOString() };
+
       if (body.action === 'status') {
         if (!STATUSES.includes(body.status)) return res.status(400).json({ error: 'Trạng thái không hợp lệ' });
         patch.status = body.status;
+        // Xe tự động về trạng thái rảnh khi đơn hoàn tất hoặc bị huỷ
+        if (body.status === 'completed' || body.status === 'cancelled') {
+          const { data: existing } = await supabase.from('orders').select('vehicle_id').eq('code', code).maybeSingle();
+          if (existing && existing.vehicle_id) {
+            await supabase.from('vehicles').update({ status: 'available' }).eq('id', existing.vehicle_id);
+          }
+        }
       } else if (body.action === 'note') {
         patch.admin_note = String(body.note || '').slice(0, 500);
-      } else if (body.action === 'vehicle') {
-        patch.car_plate = String(body.plate || '').trim().slice(0, 20);
-        patch.car_color = String(body.color || '').trim().slice(0, 40);
-        patch.car_year = String(body.year || '').trim().slice(0, 10);
-        patch.car_reg_no = String(body.regNo || '').trim().slice(0, 40);
-        patch.car_reg_date = body.regDate || null;
-        patch.car_reg_owner = String(body.regOwner || '').trim().slice(0, 150);
+      } else if (body.action === 'assign-vehicle') {
+        const vehicleId = Number(body.vehicleId);
+        if (!vehicleId) return res.status(400).json({ error: 'Thiếu xe cần gán' });
+        const { data: existing } = await supabase.from('orders').select('vehicle_id').eq('code', code).maybeSingle();
+        const { data: vehicle, error: vErr } = await supabase.from('vehicles').select('*').eq('id', vehicleId).maybeSingle();
+        if (vErr) throw vErr;
+        if (!vehicle) return res.status(404).json({ error: 'Không tìm thấy xe' });
+        if (vehicle.status !== 'available' && (!existing || existing.vehicle_id !== vehicleId)) {
+          return res.status(409).json({ error: 'Xe này hiện không rảnh (đang ' + vehicle.status + ').' });
+        }
+        if (existing && existing.vehicle_id && existing.vehicle_id !== vehicleId) {
+          await supabase.from('vehicles').update({ status: 'available' }).eq('id', existing.vehicle_id);
+        }
+        await supabase.from('vehicles').update({ status: 'rented' }).eq('id', vehicleId);
+        Object.assign(patch, {
+          vehicle_id: vehicleId, car_plate: vehicle.plate, car_color: vehicle.color, car_year: vehicle.year,
+          car_reg_no: vehicle.reg_no, car_reg_date: vehicle.reg_date, car_reg_owner: vehicle.reg_owner
+        });
+      } else if (body.action === 'unassign-vehicle') {
+        const { data: existing } = await supabase.from('orders').select('vehicle_id').eq('code', code).maybeSingle();
+        if (existing && existing.vehicle_id) {
+          await supabase.from('vehicles').update({ status: 'available' }).eq('id', existing.vehicle_id);
+        }
+        Object.assign(patch, {
+          vehicle_id: null, car_plate: null, car_color: null, car_year: null,
+          car_reg_no: null, car_reg_date: null, car_reg_owner: null
+        });
       } else {
         return res.status(400).json({ error: 'Hành động không hợp lệ' });
       }

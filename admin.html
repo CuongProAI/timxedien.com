@@ -102,6 +102,8 @@
         <button data-tab="orders">🚗 Đơn thuê xe <span id="badgeOrders"></span></button>
         <button data-tab="leads">💬 Tư vấn <span id="badgeLeads"></span></button>
         <button data-tab="users">👥 Khách hàng</button>
+        <button data-tab="vehicles">🚙 Kho xe</button>
+        <button data-tab="drivers">🧑‍✈️ Tài xế</button>
         <button class="exit" id="logoutBtn">Thoát</button>
       </div>
     </div>
@@ -184,6 +186,57 @@
       </div>
       <div id="userList"><div class="empty">Đang tải...</div></div>
     </div>
+
+    <!-- ===== TAB: Kho xe ===== -->
+    <div id="tab-vehicles" style="display:none">
+      <div class="bar" style="justify-content:space-between">
+        <h2 style="margin:0">Kho xe cho thuê (theo biển số)</h2>
+        <button class="btn ghost" id="reloadVehicles">↻ Tải lại</button>
+      </div>
+      <div class="guide" style="margin-bottom:16px">
+        Mỗi dòng xe (VD: VinFast VF 3) có thể có nhiều chiếc thực tế — thêm từng chiếc theo biển số vào đây.
+        Khi duyệt đơn ở tab "Đơn thuê xe", hệ thống sẽ gợi ý các xe cùng dòng đang <b>rảnh</b> để gán cho đơn.
+        Xe tự chuyển "Đang cho thuê" khi được gán, và tự về "Rảnh" khi đơn hoàn tất hoặc bị huỷ.
+      </div>
+      <div class="card">
+        <h2 style="margin-top:0">Thêm xe mới</h2>
+        <div class="bar">
+          <select class="inp" id="vhCarId" style="min-width:220px"></select>
+          <input class="inp" id="vhPlate" placeholder="Biển số (VD: 65A-123.45)" style="min-width:170px">
+          <input class="inp" id="vhColor" placeholder="Màu xe" style="min-width:120px">
+          <input class="inp" id="vhYear" placeholder="Năm SX" style="min-width:90px">
+        </div>
+        <div class="bar">
+          <input class="inp" id="vhRegNo" placeholder="Số giấy đăng ký xe" style="min-width:170px">
+          <input class="inp" type="date" id="vhRegDate" style="min-width:150px">
+          <input class="inp" id="vhRegOwner" placeholder="Tên chủ xe (VD: TimXeDien.com)" style="min-width:200px">
+        </div>
+        <button class="btn" id="btnAddVehicle">+ Thêm xe vào kho</button>
+      </div>
+      <div class="bar" id="vehicleChips"></div>
+      <div id="vehicleList"><div class="empty">Đang tải...</div></div>
+    </div>
+
+    <!-- ===== TAB: Tài xế ===== -->
+    <div id="tab-drivers" style="display:none">
+      <div class="bar" style="justify-content:space-between">
+        <h2 style="margin:0">Danh sách tài xế (dịch vụ có tài xế)</h2>
+        <button class="btn ghost" id="reloadDrivers">↻ Tải lại</button>
+      </div>
+      <div class="card">
+        <h2 style="margin-top:0">Thêm tài xế mới</h2>
+        <div class="bar">
+          <input class="inp" id="drName" placeholder="Họ tên tài xế">
+          <input class="inp" id="drPhone" placeholder="Số điện thoại">
+          <input class="inp" id="drLicense" placeholder="Số GPLX (không bắt buộc)">
+        </div>
+        <div class="bar">
+          <input class="inp" id="drNote" placeholder="Ghi chú (VD: rành đường Sóc Trăng, chạy được xe 7 chỗ...)" style="min-width:320px">
+        </div>
+        <button class="btn" id="btnAddDriver">+ Thêm tài xế</button>
+      </div>
+      <div id="driverList"><div class="empty">Đang tải...</div></div>
+    </div>
   </div>
 </div>
 
@@ -205,8 +258,8 @@
   };
 
   let KEY = sessionStorage.getItem("txd_admin_key") || "";
-  let ORDERS = [], LEADS = [], USERS = [];
-  let orderFilter = "all", leadFilter = "all";
+  let ORDERS = [], LEADS = [], USERS = [], VEHICLES = [], DRIVERS = [];
+  let orderFilter = "all", leadFilter = "all", vehicleFilter = "all";
 
   function banner(msg) {
     const b = $("#banner");
@@ -228,10 +281,12 @@
   async function loadAll(silent) {
     if (!silent) banner("");
     try {
-      const [o, l, u] = await Promise.all([
+      const [o, l, u, v, d] = await Promise.all([
         api("/api/orders", "GET"),
         api("/api/leads", "GET"),
-        api("/api/users", "GET")
+        api("/api/users", "GET"),
+        api("/api/vehicles", "GET"),
+        api("/api/drivers", "GET")
       ]);
       if (o.status === 401 || l.status === 401) {
         sessionStorage.removeItem("txd_admin_key");
@@ -241,6 +296,8 @@
       ORDERS = (o.data && o.data.orders) || [];
       LEADS = (l.data && l.data.leads) || [];
       USERS = (u.data && u.data.users) || [];
+      VEHICLES = (v.data && v.data.vehicles) || [];
+      DRIVERS = (d.data && d.data.drivers) || [];
       renderAll();
       return true;
     } catch (e) {
@@ -255,6 +312,8 @@
     renderOrders();
     renderLeads();
     renderUsers();
+    renderVehicles();
+    renderDrivers();
     const newOrders = ORDERS.filter((x) => x.status === "new").length;
     const newLeads = LEADS.filter((x) => x.status === "new").length;
     $("#badgeOrders").textContent = newOrders ? `(${newOrders})` : "";
@@ -301,6 +360,20 @@
 
   // ================= ĐƠN THUÊ XE =================
   const ORDER_FLOW = ["new", "confirmed", "delivering", "renting", "completed"];
+
+  function vehiclePickerHTML(o) {
+    const avail = VEHICLES.filter((v) => v.carId === o.carId && (v.status === "available" || v.id === o.vehicleId));
+    if (!avail.length) {
+      return `<div class="meta">Không có xe "${esc(o.car)}" nào đang rảnh trong kho. Vào tab 🚙 Kho xe để thêm xe mới.</div>`;
+    }
+    return `<div class="bar">
+        <select class="inp" id="vehsel-${esc(o.code)}" style="min-width:260px">
+          ${avail.map((v) => `<option value="${v.id}" ${v.id === o.vehicleId ? "selected" : ""}>${esc(v.plate)} — ${esc(v.color || "chưa rõ màu")}${v.id === o.vehicleId ? " (đang gán)" : ""}</option>`).join("")}
+        </select>
+        <button class="btn sm" data-vehassign="${esc(o.code)}">Gán xe này</button>
+        ${o.vehicleId ? `<button class="btn sm danger" data-vehunassign="${esc(o.code)}">Gỡ xe</button>` : ""}
+      </div>`;
+  }
 
   function renderOrderChips() {
     const counts = { all: ORDERS.length };
@@ -353,21 +426,11 @@
             ${Object.keys(ORDER_STATUS).map((k) => `<option value="${k}" ${o.status === k ? "selected" : ""}>${ORDER_STATUS[k].icon} ${ORDER_STATUS[k].label}</option>`).join("")}
           </select>
           <button class="btn sm ghost" data-note="${esc(o.code)}">📝 Ghi chú gửi khách</button>
-          <button class="btn sm ghost" data-vehtoggle="${esc(o.code)}">🚙 Thông tin xe</button>
+          <button class="btn sm ghost" data-vehtoggle="${esc(o.code)}">🚙 Gán xe</button>
           <button class="btn sm danger" data-del="${esc(o.code)}">Xóa</button>
         </div>
         <div class="veh-form" id="veh-${esc(o.code)}" style="display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)">
-          <div class="bar">
-            <input class="inp" style="min-width:140px" placeholder="Biển số xe" data-vf="plate" value="${esc(o.carPlate || "")}">
-            <input class="inp" style="min-width:110px" placeholder="Màu xe" data-vf="color" value="${esc(o.carColor || "")}">
-            <input class="inp" style="min-width:90px" placeholder="Năm SX" data-vf="year" value="${esc(o.carYear || "")}">
-          </div>
-          <div class="bar">
-            <input class="inp" style="min-width:180px" placeholder="Số giấy đăng ký xe" data-vf="regNo" value="${esc(o.carRegNo || "")}">
-            <input class="inp" type="date" style="min-width:150px" data-vf="regDate" value="${o.carRegDate || ""}">
-            <input class="inp" style="min-width:180px" placeholder="Tên chủ xe (VD: TimXeDien.com)" data-vf="regOwner" value="${esc(o.carRegOwner || "")}">
-          </div>
-          <button class="btn sm" data-vehsave="${esc(o.code)}">Lưu thông tin xe</button>
+          ${vehiclePickerHTML(o)}
         </div>
       </div>`;
     }).join("");
@@ -392,16 +455,18 @@
       const el = $("#veh-" + b.dataset.vehtoggle);
       el.style.display = el.style.display === "none" ? "" : "none";
     }));
-    $$("#orderList [data-vehsave]").forEach((b) => b.addEventListener("click", async () => {
-      const code = b.dataset.vehsave;
-      const box = $("#veh-" + code);
-      const get = (f) => box.querySelector(`[data-vf="${f}"]`).value.trim();
-      b.disabled = true; b.textContent = "Đang lưu...";
-      await api("/api/orders", "POST", {
-        action: "vehicle", code,
-        plate: get("plate"), color: get("color"), year: get("year"),
-        regNo: get("regNo"), regDate: get("regDate"), regOwner: get("regOwner")
-      });
+    $$("#orderList [data-vehassign]").forEach((b) => b.addEventListener("click", async () => {
+      const code = b.dataset.vehassign;
+      const sel = $("#vehsel-" + code);
+      if (!sel) return;
+      b.disabled = true; b.textContent = "Đang gán...";
+      const r = await api("/api/orders", "POST", { action: "assign-vehicle", code, vehicleId: Number(sel.value) });
+      if (!r.ok) { alert((r.data && r.data.error) || "Không gán được xe."); }
+      await loadAll(true);
+    }));
+    $$("#orderList [data-vehunassign]").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm("Gỡ xe khỏi đơn này? Xe sẽ chuyển về trạng thái Rảnh.")) return;
+      await api("/api/orders", "POST", { action: "unassign-vehicle", code: b.dataset.vehunassign });
       await loadAll(true);
     }));
     $$("#orderList [data-del]").forEach((b) => b.addEventListener("click", async () => {
@@ -533,6 +598,149 @@
     }));
   }
 
+  // ================= KHO XE =================
+  const VEHICLE_ST = {
+    available: { label: "RẢNH", color: "#15803d" },
+    rented: { label: "ĐANG CHO THUÊ", color: "#b45309" },
+    maintenance: { label: "BẢO DƯỠNG", color: "#0369a1" },
+    inactive: { label: "NGƯNG DÙNG", color: "#64748b" }
+  };
+
+  function populateCarSelect() {
+    const sel = $("#vhCarId");
+    if (!sel || typeof FLEET === "undefined") return;
+    sel.innerHTML = FLEET.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
+  }
+
+  function carNameOf(carId) {
+    if (typeof FLEET === "undefined") return carId;
+    const c = FLEET.find((x) => x.id === carId);
+    return c ? c.name : carId;
+  }
+
+  function renderVehicleChips() {
+    const counts = { all: VEHICLES.length };
+    Object.keys(VEHICLE_ST).forEach((k) => { counts[k] = VEHICLES.filter((v) => v.status === k).length; });
+    $("#vehicleChips").innerHTML =
+      `<button class="chip ${vehicleFilter === "all" ? "active" : ""}" data-vf2="all">Tất cả (${counts.all})</button>` +
+      Object.keys(VEHICLE_ST).map((k) =>
+        `<button class="chip ${vehicleFilter === k ? "active" : ""}" data-vf2="${k}">${VEHICLE_ST[k].label} (${counts[k]})</button>`
+      ).join("");
+    $$("#vehicleChips [data-vf2]").forEach((b) => b.addEventListener("click", () => { vehicleFilter = b.dataset.vf2; renderVehicles(); }));
+  }
+
+  function renderVehicles() {
+    populateCarSelect();
+    renderVehicleChips();
+    const items = vehicleFilter === "all" ? VEHICLES : VEHICLES.filter((v) => v.status === vehicleFilter);
+    if (!items.length) { $("#vehicleList").innerHTML = `<div class="empty">Chưa có xe nào trong kho — thêm xe ở form phía trên.</div>`; return; }
+
+    $("#vehicleList").innerHTML = items.map((v) => {
+      const st = VEHICLE_ST[v.status] || VEHICLE_ST.available;
+      const usedBy = ORDERS.find((o) => o.vehicleId === v.id && !["completed", "cancelled"].includes(o.status));
+      return `<div class="card">
+        <div class="top">
+          <div><b class="name">${esc(v.plate)}</b> · ${esc(v.carName)}</div>
+          <span class="pill" style="background:${st.color}">${st.label}</span>
+        </div>
+        <div class="meta">Màu: ${esc(v.color || "-")} · Năm SX: ${esc(v.year || "-")} · Đăng ký xe: ${esc(v.regNo || "-")}${v.regDate ? " (" + fmtTime(v.regDate) + ")" : ""}</div>
+        ${usedBy ? `<div class="meta">🎫 Đang gán cho đơn <b>${esc(usedBy.code)}</b> — ${esc(usedBy.name)}</div>` : ""}
+        <div class="acts">
+          <select data-vhstatus="${v.id}">
+            ${Object.keys(VEHICLE_ST).map((k) => `<option value="${k}" ${v.status === k ? "selected" : ""}>${VEHICLE_ST[k].label}</option>`).join("")}
+          </select>
+          <button class="btn sm danger" data-vhdel="${v.id}">Xóa khỏi kho</button>
+        </div>
+      </div>`;
+    }).join("");
+
+    $$("#vehicleList [data-vhstatus]").forEach((sel) => sel.addEventListener("change", async () => {
+      await api("/api/vehicles", "POST", { action: "status", id: Number(sel.dataset.vhstatus), status: sel.value });
+      await loadAll(true);
+    }));
+    $$("#vehicleList [data-vhdel]").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm("Xoá xe này khỏi kho? Không thể hoàn tác.")) return;
+      const r = await api("/api/vehicles", "POST", { action: "delete", id: Number(b.dataset.vhdel) });
+      if (!r.ok) alert((r.data && r.data.error) || "Không xoá được xe.");
+      await loadAll(true);
+    }));
+  }
+
+  $("#btnAddVehicle").addEventListener("click", async () => {
+    const sel = $("#vhCarId");
+    const carId = sel.value;
+    const carName = carNameOf(carId);
+    const plate = $("#vhPlate").value.trim();
+    if (!carId || !plate) { alert("Vui lòng chọn dòng xe và nhập biển số."); return; }
+    const btn = $("#btnAddVehicle");
+    btn.disabled = true; btn.textContent = "Đang thêm...";
+    const r = await api("/api/vehicles", "POST", {
+      action: "add", carId, carName, plate,
+      color: $("#vhColor").value.trim(), year: $("#vhYear").value.trim(),
+      regNo: $("#vhRegNo").value.trim(), regDate: $("#vhRegDate").value, regOwner: $("#vhRegOwner").value.trim()
+    });
+    btn.disabled = false; btn.textContent = "+ Thêm xe vào kho";
+    if (!r.ok) { alert((r.data && r.data.error) || "Không thêm được xe."); return; }
+    ["vhPlate", "vhColor", "vhYear", "vhRegNo", "vhRegDate", "vhRegOwner"].forEach((id) => { $("#" + id).value = ""; });
+    await loadAll(true);
+  });
+
+  // ================= TÀI XẾ =================
+  const DRIVER_ST = {
+    available: { label: "RẢNH", color: "#15803d" },
+    busy: { label: "ĐANG CHẠY", color: "#b45309" },
+    off: { label: "NGHỈ", color: "#64748b" }
+  };
+
+  function renderDrivers() {
+    if (!DRIVERS.length) { $("#driverList").innerHTML = `<div class="empty">Chưa có tài xế nào — thêm ở form phía trên.</div>`; return; }
+    $("#driverList").innerHTML = DRIVERS.map((d) => {
+      const st = DRIVER_ST[d.status] || DRIVER_ST.available;
+      return `<div class="card">
+        <div class="top">
+          <div><b class="name">${esc(d.name)}</b> · <a href="tel:${esc(d.phone)}">${esc(d.phone)}</a></div>
+          <span class="pill" style="background:${st.color}">${st.label}</span>
+        </div>
+        ${d.licenseNumber ? `<div class="meta">GPLX: ${esc(d.licenseNumber)}</div>` : ""}
+        ${d.note ? `<div class="msg">📝 ${esc(d.note)}</div>` : ""}
+        <div class="acts">
+          <a href="tel:${esc(d.phone)}">📞 Gọi</a>
+          <a href="https://zalo.me/${digits(d.phone)}" target="_blank" rel="noopener">💬 Zalo</a>
+          <select data-drstatus="${d.id}">
+            ${Object.keys(DRIVER_ST).map((k) => `<option value="${k}" ${d.status === k ? "selected" : ""}>${DRIVER_ST[k].label}</option>`).join("")}
+          </select>
+          <button class="btn sm danger" data-drdel="${d.id}">Xóa</button>
+        </div>
+      </div>`;
+    }).join("");
+
+    $$("#driverList [data-drstatus]").forEach((sel) => sel.addEventListener("change", async () => {
+      await api("/api/drivers", "POST", { action: "status", id: Number(sel.dataset.drstatus), status: sel.value });
+      await loadAll(true);
+    }));
+    $$("#driverList [data-drdel]").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm("Xoá tài xế này?")) return;
+      await api("/api/drivers", "POST", { action: "delete", id: Number(b.dataset.drdel) });
+      await loadAll(true);
+    }));
+  }
+
+  $("#btnAddDriver").addEventListener("click", async () => {
+    const name = $("#drName").value.trim();
+    const phone = $("#drPhone").value.trim();
+    if (!name || !phone) { alert("Vui lòng nhập tên và số điện thoại tài xế."); return; }
+    const btn = $("#btnAddDriver");
+    btn.disabled = true; btn.textContent = "Đang thêm...";
+    const r = await api("/api/drivers", "POST", {
+      action: "add", name, phone,
+      licenseNumber: $("#drLicense").value.trim(), note: $("#drNote").value.trim()
+    });
+    btn.disabled = false; btn.textContent = "+ Thêm tài xế";
+    if (!r.ok) { alert((r.data && r.data.error) || "Không thêm được tài xế."); return; }
+    ["drName", "drPhone", "drLicense", "drNote"].forEach((id) => { $("#" + id).value = ""; });
+    await loadAll(true);
+  });
+
   // ================= XUẤT CSV =================
   function downloadCSV(filename, rows) {
     const csv = "﻿" + rows.map((r) => r.map((c) => `"${String(c == null ? "" : c).replace(/"/g, '""')}"`).join(",")).join("\n");
@@ -557,7 +765,7 @@
 
   // ================= TAB & ĐĂNG NHẬP =================
   function showTab(name) {
-    ["dash", "orders", "leads", "users"].forEach((t) => { $("#tab-" + t).style.display = t === name ? "" : "none"; });
+    ["dash", "orders", "leads", "users", "vehicles", "drivers"].forEach((t) => { $("#tab-" + t).style.display = t === name ? "" : "none"; });
     $$("#tabs [data-tab]").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
   }
   $$("#tabs [data-tab]").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
@@ -599,7 +807,7 @@
     showLogin("");
   });
 
-  ["#reloadAll", "#reloadOrders", "#reloadLeads", "#reloadUsers"].forEach((id) =>
+  ["#reloadAll", "#reloadOrders", "#reloadLeads", "#reloadUsers", "#reloadVehicles", "#reloadDrivers"].forEach((id) =>
     $(id).addEventListener("click", () => loadAll())
   );
   $("#orderSearch").addEventListener("input", renderOrders);
