@@ -203,7 +203,7 @@
         Xe tự chuyển "Đang cho thuê" khi được gán, và tự về "Rảnh" khi đơn hoàn tất hoặc bị huỷ.
       </div>
       <div class="card">
-        <h2 style="margin-top:0">Thêm xe mới</h2>
+        <h2 style="margin-top:0" id="vehicleFormTitle">Thêm xe mới</h2>
         <div class="bar">
           <select class="inp" id="vhCarId" style="min-width:220px"></select>
           <input class="inp" id="vhPlate" placeholder="Biển số (VD: 65A-123.45)" style="min-width:170px">
@@ -216,6 +216,7 @@
           <input class="inp" id="vhRegOwner" placeholder="Tên chủ xe (VD: TimXeDien.com)" style="min-width:200px">
         </div>
         <button class="btn" id="btnAddVehicle">+ Thêm xe vào kho</button>
+        <button class="btn ghost" id="btnCancelVehicleEdit" style="display:none">Huỷ sửa</button>
       </div>
       <div class="bar" id="vehicleChips"></div>
       <div id="vehicleList"><div class="empty">Đang tải...</div></div>
@@ -408,6 +409,7 @@
   let ORDERS = [], LEADS = [], USERS = [], VEHICLES = [], DRIVERS = [];
   let CARS = [], FAQ_ITEMS = [], REVIEW_ITEMS = [], SITE_CONFIG = null;
   let orderFilter = "all", leadFilter = "all", vehicleFilter = "all";
+  let editingVehicleId = null;
   let editingFleetId = null, editingFaqId = null, editingReviewId = null;
 
   function banner(msg) {
@@ -776,7 +778,9 @@
   function populateCarSelect() {
     const sel = $("#vhCarId");
     if (!sel) return;
+    const prev = sel.value;
     sel.innerHTML = CARS.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
+    if (prev && CARS.some((c) => c.id === prev)) sel.value = prev;
   }
 
   function carNameOf(carId) {
@@ -815,6 +819,7 @@
           <select data-vhstatus="${v.id}">
             ${Object.keys(VEHICLE_ST).map((k) => `<option value="${k}" ${v.status === k ? "selected" : ""}>${VEHICLE_ST[k].label}</option>`).join("")}
           </select>
+          <button class="btn sm ghost" data-vhedit="${v.id}">✏️ Sửa</button>
           <button class="btn sm danger" data-vhdel="${v.id}">Xóa khỏi kho</button>
         </div>
       </div>`;
@@ -824,6 +829,7 @@
       await api("/api/vehicles", "POST", { action: "status", id: Number(sel.dataset.vhstatus), status: sel.value });
       await loadAll(true);
     }));
+    $$("#vehicleList [data-vhedit]").forEach((b) => b.addEventListener("click", () => startEditVehicle(Number(b.dataset.vhedit))));
     $$("#vehicleList [data-vhdel]").forEach((b) => b.addEventListener("click", async () => {
       if (!confirm("Xoá xe này khỏi kho? Không thể hoàn tác.")) return;
       const r = await api("/api/vehicles", "POST", { action: "delete", id: Number(b.dataset.vhdel) });
@@ -832,6 +838,33 @@
     }));
   }
 
+  function startEditVehicle(id) {
+    const v = VEHICLES.find((x) => x.id === id);
+    if (!v) return;
+    editingVehicleId = id;
+    $("#vhCarId").value = v.carId;
+    $("#vhPlate").value = v.plate || "";
+    $("#vhColor").value = v.color || "";
+    $("#vhYear").value = v.year || "";
+    $("#vhRegNo").value = v.regNo || "";
+    $("#vhRegDate").value = v.regDate ? String(v.regDate).slice(0, 10) : "";
+    $("#vhRegOwner").value = v.regOwner || "";
+    $("#vehicleFormTitle").textContent = `Sửa xe — biển số ${v.plate}`;
+    $("#btnAddVehicle").textContent = "💾 Lưu thay đổi";
+    $("#btnCancelVehicleEdit").style.display = "";
+    $("#vehicleFormTitle").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function resetVehicleForm() {
+    editingVehicleId = null;
+    ["vhPlate", "vhColor", "vhYear", "vhRegNo", "vhRegDate", "vhRegOwner"].forEach((id) => { $("#" + id).value = ""; });
+    $("#vehicleFormTitle").textContent = "Thêm xe mới";
+    $("#btnAddVehicle").textContent = "+ Thêm xe vào kho";
+    $("#btnCancelVehicleEdit").style.display = "none";
+  }
+
+  $("#btnCancelVehicleEdit").addEventListener("click", resetVehicleForm);
+
   $("#btnAddVehicle").addEventListener("click", async () => {
     const sel = $("#vhCarId");
     const carId = sel.value;
@@ -839,15 +872,18 @@
     const plate = $("#vhPlate").value.trim();
     if (!carId || !plate) { alert("Vui lòng chọn dòng xe và nhập biển số."); return; }
     const btn = $("#btnAddVehicle");
-    btn.disabled = true; btn.textContent = "Đang thêm...";
-    const r = await api("/api/vehicles", "POST", {
-      action: "add", carId, carName, plate,
+    const isEdit = !!editingVehicleId;
+    btn.disabled = true; btn.textContent = isEdit ? "Đang lưu..." : "Đang thêm...";
+    const payload = {
+      action: isEdit ? "update" : "add", carId, carName, plate,
       color: $("#vhColor").value.trim(), year: $("#vhYear").value.trim(),
       regNo: $("#vhRegNo").value.trim(), regDate: $("#vhRegDate").value, regOwner: $("#vhRegOwner").value.trim()
-    });
-    btn.disabled = false; btn.textContent = "+ Thêm xe vào kho";
-    if (!r.ok) { alert((r.data && r.data.error) || "Không thêm được xe."); return; }
-    ["vhPlate", "vhColor", "vhYear", "vhRegNo", "vhRegDate", "vhRegOwner"].forEach((id) => { $("#" + id).value = ""; });
+    };
+    if (isEdit) payload.id = editingVehicleId;
+    const r = await api("/api/vehicles", "POST", payload);
+    btn.disabled = false;
+    if (!r.ok) { alert((r.data && r.data.error) || (isEdit ? "Không lưu được thay đổi." : "Không thêm được xe.")); btn.textContent = isEdit ? "💾 Lưu thay đổi" : "+ Thêm xe vào kho"; return; }
+    resetVehicleForm();
     await loadAll(true);
   });
 
