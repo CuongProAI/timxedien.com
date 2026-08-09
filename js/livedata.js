@@ -20,10 +20,10 @@
 
   async function loadLive() {
     const [cfg, fleet, faqs, reviews] = await Promise.all([
-      fetchJson("/api/site-config"),
+      fetchJson("/api/content?type=config"),
       fetchJson("/api/fleet"),
-      fetchJson("/api/faqs"),
-      fetchJson("/api/reviews")
+      fetchJson("/api/content?type=faqs"),
+      fetchJson("/api/content?type=reviews")
     ]);
 
     let changed = false;

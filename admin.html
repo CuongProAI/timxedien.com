@@ -436,9 +436,9 @@
         api("/api/vehicles", "GET"),
         api("/api/drivers", "GET"),
         api("/api/fleet", "GET"),
-        api("/api/faqs", "GET"),
-        api("/api/reviews", "GET"),
-        api("/api/site-config", "GET")
+        api("/api/content?type=faqs", "GET"),
+        api("/api/content?type=reviews", "GET"),
+        api("/api/content?type=config", "GET")
       ]);
       if (o.status === 401 || l.status === 401) {
         sessionStorage.removeItem("txd_admin_key");
@@ -1104,13 +1104,13 @@
     $$("#faqAdminList [data-faqtoggle]").forEach((b) => b.addEventListener("click", async () => {
       const f = FAQ_ITEMS.find((x) => x.id === Number(b.dataset.faqtoggle));
       if (!f) return;
-      await api("/api/faqs", "POST", { action: "update", id: f.id, active: !f.active });
+      await api("/api/content", "POST", { type: "faqs", action: "update", id: f.id, active: !f.active });
       await loadAll(true);
     }));
     $$("#faqAdminList [data-faqdel]").forEach((b) => b.addEventListener("click", async () => {
       if (!confirm("Xóa câu hỏi này? Không thể hoàn tác.")) return;
       const id = Number(b.dataset.faqdel);
-      await api("/api/faqs", "POST", { action: "delete", id });
+      await api("/api/content", "POST", { type: "faqs", action: "delete", id });
       if (editingFaqId === id) resetFaqForm();
       await loadAll(true);
     }));
@@ -1122,10 +1122,10 @@
     if (!q || !a) { alert("Vui lòng nhập đủ câu hỏi và câu trả lời."); return; }
     const btn = $("#btnSaveFaq");
     btn.disabled = true; btn.textContent = "Đang lưu...";
-    const payload = { q, a, active: $("#faqActive").checked };
+    const payload = { type: "faqs", q, a, active: $("#faqActive").checked };
     const r = editingFaqId
-      ? await api("/api/faqs", "POST", Object.assign({ action: "update", id: editingFaqId }, payload))
-      : await api("/api/faqs", "POST", Object.assign({ action: "add" }, payload));
+      ? await api("/api/content", "POST", Object.assign({ action: "update", id: editingFaqId }, payload))
+      : await api("/api/content", "POST", Object.assign({ action: "add" }, payload));
     btn.disabled = false;
     if (!r.ok) { alert((r.data && r.data.error) || "Không lưu được."); btn.textContent = editingFaqId ? "💾 Lưu thay đổi" : "+ Thêm câu hỏi"; return; }
     resetFaqForm();
@@ -1174,13 +1174,13 @@
     $$("#reviewAdminList [data-rvtoggle]").forEach((b) => b.addEventListener("click", async () => {
       const r = REVIEW_ITEMS.find((x) => x.id === Number(b.dataset.rvtoggle));
       if (!r) return;
-      await api("/api/reviews", "POST", { action: "update", id: r.id, active: !r.active });
+      await api("/api/content", "POST", { type: "reviews", action: "update", id: r.id, active: !r.active });
       await loadAll(true);
     }));
     $$("#reviewAdminList [data-rvdel]").forEach((b) => b.addEventListener("click", async () => {
       if (!confirm("Xóa đánh giá này? Không thể hoàn tác.")) return;
       const id = Number(b.dataset.rvdel);
-      await api("/api/reviews", "POST", { action: "delete", id });
+      await api("/api/content", "POST", { type: "reviews", action: "delete", id });
       if (editingReviewId === id) resetReviewForm();
       await loadAll(true);
     }));
@@ -1192,10 +1192,10 @@
     if (!name || !text) { alert("Vui lòng nhập đủ tên khách và nội dung đánh giá."); return; }
     const btn = $("#btnSaveReview");
     btn.disabled = true; btn.textContent = "Đang lưu...";
-    const payload = { name, role: $("#rvRole").value.trim(), stars: Number($("#rvStars").value), text, active: $("#rvActive").checked };
+    const payload = { type: "reviews", name, role: $("#rvRole").value.trim(), stars: Number($("#rvStars").value), text, active: $("#rvActive").checked };
     const r = editingReviewId
-      ? await api("/api/reviews", "POST", Object.assign({ action: "update", id: editingReviewId }, payload))
-      : await api("/api/reviews", "POST", Object.assign({ action: "add" }, payload));
+      ? await api("/api/content", "POST", Object.assign({ action: "update", id: editingReviewId }, payload))
+      : await api("/api/content", "POST", Object.assign({ action: "add" }, payload));
     btn.disabled = false;
     if (!r.ok) { alert((r.data && r.data.error) || "Không lưu được."); btn.textContent = editingReviewId ? "💾 Lưu thay đổi" : "+ Thêm đánh giá"; return; }
     resetReviewForm();
@@ -1220,7 +1220,8 @@
   $("#btnSaveConfig").addEventListener("click", async () => {
     const btn = $("#btnSaveConfig");
     btn.disabled = true; btn.textContent = "Đang lưu...";
-    const r = await api("/api/site-config", "POST", {
+    const r = await api("/api/content", "POST", {
+      type: "config",
       brand: $("#cfBrand").value.trim(),
       slogan: $("#cfSlogan").value.trim(),
       hotline: $("#cfHotline").value.trim(),
