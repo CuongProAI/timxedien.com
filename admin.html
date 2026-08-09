@@ -457,8 +457,8 @@
       renderAll();
       return true;
     } catch (e) {
+      console.error("loadAll error", e);
       banner("⚠️ Không gọi được API — trang quản trị chỉ hoạt động khi website đã deploy lên Vercel (không chạy được từ file trên máy).");
-      renderAll();
       return true;
     }
   }
