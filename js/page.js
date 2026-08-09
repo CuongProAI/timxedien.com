@@ -52,12 +52,13 @@ window.TXDPage = (function () {
   });
 
   // ---------- Liên kết liên hệ theo CONFIG ----------
-  (function applyConfig() {
+  function applyConfig() {
     const tel = "tel:" + CONFIG.hotline;
     $$("[data-cfg^=telLink]").forEach((a) => { a.href = tel; a.textContent = a.textContent.replace(/[\d.]{10,}/, CONFIG.hotlineDisplay); });
     $$("[data-cfg^=zaloLink]").forEach((a) => { if (a.tagName === "A") a.href = CONFIG.zalo; });
     $$("[data-cfg^=emailLink]").forEach((a) => { a.href = "mailto:" + CONFIG.email; a.textContent = CONFIG.email; });
-  })();
+  }
+  applyConfig();
 
   // ---------- Gửi lead tư vấn (fallback Zalo khi chạy local) ----------
   async function sendLead(payload) {
@@ -125,6 +126,12 @@ window.TXDPage = (function () {
     window.addEventListener("scroll", () => toTop.classList.toggle("show", window.scrollY > 700), { passive: true });
     toTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
   }
+
+  // ---------- Cập nhật khi có dữ liệu thật từ admin (js/livedata.js) ----------
+  document.addEventListener("txd:live-data-ready", () => {
+    applyConfig();
+    $$(".reveal").forEach((el) => io.observe(el));
+  });
 
   return { $, $$, fmt, toast, validPhone, openModal, closeModal, sendLead, openConsult, observeReveal: (el) => io.observe(el) };
 })();

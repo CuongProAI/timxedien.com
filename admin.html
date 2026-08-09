@@ -104,6 +104,10 @@
         <button data-tab="users">👥 Khách hàng</button>
         <button data-tab="vehicles">🚙 Kho xe</button>
         <button data-tab="drivers">🧑‍✈️ Tài xế</button>
+        <button data-tab="fleet">🚘 Đội xe</button>
+        <button data-tab="faqs">❓ FAQ</button>
+        <button data-tab="reviews">⭐ Đánh giá</button>
+        <button data-tab="siteconfig">⚙️ Thông tin chung</button>
         <button class="exit" id="logoutBtn">Thoát</button>
       </div>
     </div>
@@ -237,10 +241,152 @@
       </div>
       <div id="driverList"><div class="empty">Đang tải...</div></div>
     </div>
+
+    <!-- ===== TAB: Đội xe (bảng giá hiển thị ở trang chủ) ===== -->
+    <div id="tab-fleet" style="display:none">
+      <div class="bar" style="justify-content:space-between">
+        <h2 style="margin:0">Đội xe — bảng giá hiển thị ở trang chủ</h2>
+        <button class="btn ghost" id="reloadFleet">↻ Tải lại</button>
+      </div>
+      <div class="guide" style="margin-bottom:16px">
+        Đây là "mẫu xe" khách thấy ở trang chủ (giá, mô tả, ảnh) — khác với tab "Kho xe" (xe thật theo biển số).
+        Sửa ở đây cập nhật ngay trên website, không cần deploy code lại (có thể mất vài giây để tải lại trang mới thấy).
+      </div>
+      <div class="card">
+        <h2 style="margin-top:0" id="fleetFormTitle">Thêm xe mới</h2>
+        <div class="bar">
+          <input class="inp" id="flName" placeholder="Tên xe (VD: VinFast VF 6)" style="min-width:220px">
+          <select class="inp" id="flSegment" style="min-width:160px">
+            <option value="mini">Minicar / Mini SUV</option>
+            <option value="suv">SUV</option>
+            <option value="7cho">7 chỗ / MPV</option>
+            <option value="dichvu">Xe dịch vụ</option>
+          </select>
+          <input class="inp" id="flSegmentLabel" placeholder="Nhãn phân khúc (VD: B-SUV)" style="min-width:170px">
+          <input class="inp" type="number" id="flSeats" placeholder="Số chỗ" style="min-width:80px" value="5">
+        </div>
+        <div class="bar">
+          <input class="inp" id="flRange" placeholder="Tầm hoạt động (VD: 460 km/sạc)" style="min-width:190px">
+          <input class="inp" type="number" id="flPriceDay" placeholder="Giá thuê/ngày (đ)" style="min-width:160px">
+          <input class="inp" type="number" id="flPriceMonth" placeholder="Giá thuê/tháng (đ)" style="min-width:160px">
+          <input class="inp" type="number" id="flOverKm" placeholder="Phụ phí vượt km (đ/km)" style="min-width:170px">
+        </div>
+        <div class="bar">
+          <input class="inp" id="flTag" placeholder="Nhãn nổi bật (VD: MỚI, GIA ĐÌNH — để trống nếu không có)" style="min-width:100%">
+        </div>
+        <div class="bar">
+          <textarea class="inp" id="flDesc" placeholder="Mô tả xe" style="min-width:100%;min-height:60px"></textarea>
+        </div>
+        <div class="bar">
+          <textarea class="inp" id="flFeatures" placeholder="Điểm nổi bật — mỗi dòng 1 ý, tối đa 5 dòng" style="min-width:100%;min-height:70px"></textarea>
+        </div>
+        <div class="bar">
+          <input type="file" id="flImageFile" accept="image/*">
+          <img id="flImagePreview" style="height:50px;border-radius:8px;display:none;object-fit:contain">
+          <label style="display:flex;align-items:center;gap:6px;font-weight:600;color:var(--mut)">
+            <input type="checkbox" id="flActive" checked> Hiển thị trên trang chủ
+          </label>
+        </div>
+        <div class="bar">
+          <button class="btn" id="btnSaveFleet">+ Thêm xe</button>
+          <button class="btn ghost" id="btnCancelFleetEdit" style="display:none">Huỷ sửa</button>
+        </div>
+      </div>
+      <div id="fleetList"><div class="empty">Đang tải...</div></div>
+    </div>
+
+    <!-- ===== TAB: FAQ ===== -->
+    <div id="tab-faqs" style="display:none">
+      <div class="bar" style="justify-content:space-between">
+        <h2 style="margin:0">Câu hỏi thường gặp — hiển thị ở trang chủ</h2>
+        <button class="btn ghost" id="reloadFaqs">↻ Tải lại</button>
+      </div>
+      <div class="card">
+        <h2 style="margin-top:0" id="faqFormTitle">Thêm câu hỏi mới</h2>
+        <div class="bar">
+          <input class="inp" id="faqQ" placeholder="Câu hỏi" style="min-width:100%">
+        </div>
+        <div class="bar">
+          <textarea class="inp" id="faqA" placeholder="Câu trả lời" style="min-width:100%;min-height:70px"></textarea>
+        </div>
+        <div class="bar">
+          <label style="display:flex;align-items:center;gap:6px;font-weight:600;color:var(--mut)">
+            <input type="checkbox" id="faqActive" checked> Hiển thị trên trang chủ
+          </label>
+          <button class="btn" id="btnSaveFaq">+ Thêm câu hỏi</button>
+          <button class="btn ghost" id="btnCancelFaqEdit" style="display:none">Huỷ sửa</button>
+        </div>
+      </div>
+      <div id="faqAdminList"><div class="empty">Đang tải...</div></div>
+    </div>
+
+    <!-- ===== TAB: Đánh giá khách hàng ===== -->
+    <div id="tab-reviews" style="display:none">
+      <div class="bar" style="justify-content:space-between">
+        <h2 style="margin:0">Đánh giá khách hàng — hiển thị ở trang chủ</h2>
+        <button class="btn ghost" id="reloadReviews">↻ Tải lại</button>
+      </div>
+      <div class="card">
+        <h2 style="margin-top:0" id="reviewFormTitle">Thêm đánh giá mới</h2>
+        <div class="bar">
+          <input class="inp" id="rvName" placeholder="Tên khách hàng" style="min-width:200px">
+          <input class="inp" id="rvRole" placeholder="Vai trò / khu vực (VD: Chủ homestay — Ninh Kiều)" style="min-width:280px">
+          <select class="inp" id="rvStars" style="min-width:110px">
+            <option value="5">★★★★★</option>
+            <option value="4">★★★★</option>
+            <option value="3">★★★</option>
+          </select>
+        </div>
+        <div class="bar">
+          <textarea class="inp" id="rvText" placeholder="Nội dung đánh giá" style="min-width:100%;min-height:70px"></textarea>
+        </div>
+        <div class="bar">
+          <label style="display:flex;align-items:center;gap:6px;font-weight:600;color:var(--mut)">
+            <input type="checkbox" id="rvActive" checked> Hiển thị trên trang chủ
+          </label>
+          <button class="btn" id="btnSaveReview">+ Thêm đánh giá</button>
+          <button class="btn ghost" id="btnCancelReviewEdit" style="display:none">Huỷ sửa</button>
+        </div>
+      </div>
+      <div id="reviewAdminList"><div class="empty">Đang tải...</div></div>
+    </div>
+
+    <!-- ===== TAB: Thông tin chung ===== -->
+    <div id="tab-siteconfig" style="display:none">
+      <div class="bar" style="justify-content:space-between">
+        <h2 style="margin:0">Thông tin chung của website</h2>
+        <button class="btn ghost" id="reloadConfig">↻ Tải lại</button>
+      </div>
+      <div class="guide" style="margin-bottom:16px">Sửa xong bấm "Lưu thông tin" — mọi trang trên website sẽ cập nhật số hotline/Zalo/địa chỉ mới trong ít phút.</div>
+      <div class="card">
+        <div class="bar">
+          <input class="inp" id="cfBrand" placeholder="Tên thương hiệu" style="min-width:220px">
+          <input class="inp" id="cfSlogan" placeholder="Khẩu hiệu (slogan)" style="min-width:320px">
+        </div>
+        <div class="bar">
+          <input class="inp" id="cfHotline" placeholder="Số hotline (VD: 0939099018)" style="min-width:200px">
+          <input class="inp" id="cfHotlineDisplay" placeholder="Hotline hiển thị (VD: 0939.099.018)" style="min-width:220px">
+        </div>
+        <div class="bar">
+          <input class="inp" id="cfZalo" placeholder="Link Zalo (VD: https://zalo.me/0939099018)" style="min-width:320px">
+          <input class="inp" id="cfEmail" placeholder="Email liên hệ" style="min-width:220px">
+        </div>
+        <div class="bar">
+          <input class="inp" id="cfAddress" placeholder="Địa chỉ / khu vực phục vụ" style="min-width:100%">
+        </div>
+        <div class="bar">
+          <input class="inp" id="cfMapLink" placeholder="Link Google Maps" style="min-width:100%">
+        </div>
+        <div class="bar">
+          <input class="inp" id="cfFacebook" placeholder="Link Facebook" style="min-width:280px">
+          <input class="inp" id="cfTiktok" placeholder="Link TikTok" style="min-width:280px">
+        </div>
+        <button class="btn" id="btnSaveConfig">💾 Lưu thông tin</button>
+      </div>
+    </div>
   </div>
 </div>
 
-<script src="js/data.js"></script>
 <script>
 (function () {
   "use strict";
@@ -259,7 +405,9 @@
 
   let KEY = sessionStorage.getItem("txd_admin_key") || "";
   let ORDERS = [], LEADS = [], USERS = [], VEHICLES = [], DRIVERS = [];
+  let CARS = [], FAQ_ITEMS = [], REVIEW_ITEMS = [], SITE_CONFIG = null;
   let orderFilter = "all", leadFilter = "all", vehicleFilter = "all";
+  let editingFleetId = null, editingFaqId = null, editingReviewId = null;
 
   function banner(msg) {
     const b = $("#banner");
@@ -281,12 +429,16 @@
   async function loadAll(silent) {
     if (!silent) banner("");
     try {
-      const [o, l, u, v, d] = await Promise.all([
+      const [o, l, u, v, d, fl, fq, rv, cf] = await Promise.all([
         api("/api/orders", "GET"),
         api("/api/leads", "GET"),
         api("/api/users", "GET"),
         api("/api/vehicles", "GET"),
-        api("/api/drivers", "GET")
+        api("/api/drivers", "GET"),
+        api("/api/fleet", "GET"),
+        api("/api/faqs", "GET"),
+        api("/api/reviews", "GET"),
+        api("/api/site-config", "GET")
       ]);
       if (o.status === 401 || l.status === 401) {
         sessionStorage.removeItem("txd_admin_key");
@@ -298,6 +450,10 @@
       USERS = (u.data && u.data.users) || [];
       VEHICLES = (v.data && v.data.vehicles) || [];
       DRIVERS = (d.data && d.data.drivers) || [];
+      CARS = (fl.data && fl.data.cars) || [];
+      FAQ_ITEMS = (fq.data && fq.data.faqs) || [];
+      REVIEW_ITEMS = (rv.data && rv.data.reviews) || [];
+      SITE_CONFIG = (cf.data && cf.data.config) || null;
       renderAll();
       return true;
     } catch (e) {
@@ -314,6 +470,10 @@
     renderUsers();
     renderVehicles();
     renderDrivers();
+    renderFleetList();
+    renderFaqAdminList();
+    renderReviewAdminList();
+    fillConfigForm();
     const newOrders = ORDERS.filter((x) => x.status === "new").length;
     const newLeads = LEADS.filter((x) => x.status === "new").length;
     $("#badgeOrders").textContent = newOrders ? `(${newOrders})` : "";
@@ -614,13 +774,12 @@
 
   function populateCarSelect() {
     const sel = $("#vhCarId");
-    if (!sel || typeof FLEET === "undefined") return;
-    sel.innerHTML = FLEET.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
+    if (!sel) return;
+    sel.innerHTML = CARS.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
   }
 
   function carNameOf(carId) {
-    if (typeof FLEET === "undefined") return carId;
-    const c = FLEET.find((x) => x.id === carId);
+    const c = CARS.find((x) => x.id === carId);
     return c ? c.name : carId;
   }
 
@@ -747,6 +906,339 @@
     await loadAll(true);
   });
 
+  // ================= ĐỘI XE (bảng giá trang chủ) =================
+  let pendingFleetImage = null;
+
+  function readAndCompressImage(file, maxSide, quality) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          let w = img.width, h = img.height;
+          if (w > maxSide || h > maxSide) {
+            const scale = maxSide / Math.max(w, h);
+            w = Math.round(w * scale); h = Math.round(h * scale);
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = w; canvas.height = h;
+          canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", quality || 0.85));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  $("#flImageFile").addEventListener("change", async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      pendingFleetImage = await readAndCompressImage(file, 1000, 0.85);
+      $("#flImagePreview").src = pendingFleetImage;
+      $("#flImagePreview").style.display = "";
+    } catch (err) { alert("Không đọc được ảnh, thử ảnh khác."); }
+  });
+
+  function resetFleetForm() {
+    editingFleetId = null;
+    pendingFleetImage = null;
+    ["flName", "flSegmentLabel", "flRange", "flPriceDay", "flPriceMonth", "flOverKm", "flTag", "flDesc", "flFeatures"].forEach((id) => { $("#" + id).value = ""; });
+    $("#flSegment").value = "suv";
+    $("#flSeats").value = "5";
+    $("#flActive").checked = true;
+    $("#flImageFile").value = "";
+    $("#flImagePreview").style.display = "none";
+    $("#fleetFormTitle").textContent = "Thêm xe mới";
+    $("#btnSaveFleet").textContent = "+ Thêm xe";
+    $("#btnCancelFleetEdit").style.display = "none";
+  }
+
+  function startEditFleet(id) {
+    const c = CARS.find((x) => x.id === id);
+    if (!c) return;
+    editingFleetId = id;
+    pendingFleetImage = null;
+    $("#flName").value = c.name || "";
+    $("#flSegment").value = c.segment || "suv";
+    $("#flSegmentLabel").value = c.segmentLabel || "";
+    $("#flSeats").value = c.seats || 5;
+    $("#flRange").value = c.range || "";
+    $("#flPriceDay").value = c.priceDay || "";
+    $("#flPriceMonth").value = c.priceMonth || "";
+    $("#flOverKm").value = c.overKm || "";
+    $("#flTag").value = c.tag || "";
+    $("#flDesc").value = c.desc || "";
+    $("#flFeatures").value = (c.features || []).join("\n");
+    $("#flActive").checked = c.active !== false;
+    $("#flImageFile").value = "";
+    if (c.img) { $("#flImagePreview").src = c.img; $("#flImagePreview").style.display = ""; }
+    else { $("#flImagePreview").style.display = "none"; }
+    $("#fleetFormTitle").textContent = "Sửa xe: " + c.name;
+    $("#btnSaveFleet").textContent = "💾 Lưu thay đổi";
+    $("#btnCancelFleetEdit").style.display = "";
+    $("#tab-fleet").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  $("#btnCancelFleetEdit").addEventListener("click", resetFleetForm);
+
+  function renderFleetList() {
+    if (!CARS.length) { $("#fleetList").innerHTML = `<div class="empty">Chưa có xe nào — thêm ở form phía trên.</div>`; return; }
+    $("#fleetList").innerHTML = CARS.map((c) => `
+      <div class="card">
+        <div class="top">
+          <div style="display:flex;align-items:center;gap:12px">
+            ${c.img ? `<img src="${esc(c.img)}" alt="" style="width:64px;height:40px;object-fit:contain;border-radius:6px;background:var(--mist)">` : ""}
+            <div><b class="name">${esc(c.name)}</b> · ${fmt(c.priceDay)}/ngày</div>
+          </div>
+          <span class="pill" style="background:${c.active ? "#15803d" : "#64748b"}">${c.active ? "ĐANG HIỆN" : "ĐANG ẨN"}</span>
+        </div>
+        <div class="meta">${esc(c.segmentLabel || "")} · ${c.seats} chỗ · ${esc(c.range || "")}${c.tag ? " · 🏷 " + esc(c.tag) : ""}</div>
+        <div class="acts">
+          <button class="btn sm ghost" data-fledit="${esc(c.id)}">✏️ Sửa</button>
+          <button class="btn sm" data-fltoggle="${esc(c.id)}">${c.active ? "Ẩn khỏi trang chủ" : "Hiện lại"}</button>
+          <button class="btn sm danger" data-fldel="${esc(c.id)}">Xóa</button>
+        </div>
+      </div>`).join("");
+
+    $$("#fleetList [data-fledit]").forEach((b) => b.addEventListener("click", () => startEditFleet(b.dataset.fledit)));
+    $$("#fleetList [data-fltoggle]").forEach((b) => b.addEventListener("click", async () => {
+      const car = CARS.find((x) => x.id === b.dataset.fltoggle);
+      if (!car) return;
+      await api("/api/fleet", "POST", { action: "update", id: car.id, active: !car.active });
+      await loadAll(true);
+    }));
+    $$("#fleetList [data-fldel]").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm("Xóa hẳn xe này khỏi bảng giá? Không thể hoàn tác.")) return;
+      const id = b.dataset.fldel;
+      const r = await api("/api/fleet", "POST", { action: "delete", id });
+      if (!r.ok) { alert((r.data && r.data.error) || "Không xóa được xe."); return; }
+      if (editingFleetId === id) resetFleetForm();
+      await loadAll(true);
+    }));
+  }
+
+  $("#reloadFleet").addEventListener("click", () => loadAll());
+
+  $("#btnSaveFleet").addEventListener("click", async () => {
+    const name = $("#flName").value.trim();
+    if (!name) { alert("Vui lòng nhập tên xe."); return; }
+    const payload = {
+      name,
+      segment: $("#flSegment").value,
+      segmentLabel: $("#flSegmentLabel").value.trim(),
+      seats: $("#flSeats").value,
+      range: $("#flRange").value.trim(),
+      priceDay: $("#flPriceDay").value,
+      priceMonth: $("#flPriceMonth").value,
+      overKm: $("#flOverKm").value,
+      tag: $("#flTag").value.trim(),
+      desc: $("#flDesc").value.trim(),
+      features: $("#flFeatures").value.split("\n").map((s) => s.trim()).filter(Boolean),
+      active: $("#flActive").checked
+    };
+
+    const btn = $("#btnSaveFleet");
+    btn.disabled = true; btn.textContent = "Đang lưu...";
+    try {
+      let id = editingFleetId;
+      if (editingFleetId) {
+        const r = await api("/api/fleet", "POST", Object.assign({ action: "update", id: editingFleetId }, payload));
+        if (!r.ok) { alert((r.data && r.data.error) || "Không lưu được."); return; }
+      } else {
+        const r = await api("/api/fleet", "POST", Object.assign({ action: "add" }, payload));
+        if (!r.ok) { alert((r.data && r.data.error) || "Không thêm được xe."); return; }
+        id = r.data.car.id;
+      }
+      if (pendingFleetImage) {
+        const rImg = await api("/api/fleet", "POST", { action: "upload-image", id, dataUrl: pendingFleetImage });
+        if (!rImg.ok) alert("Đã lưu xe nhưng tải ảnh lên thất bại — thử tải lại ảnh sau.");
+      }
+      resetFleetForm();
+      await loadAll(true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = editingFleetId ? "💾 Lưu thay đổi" : "+ Thêm xe";
+    }
+  });
+
+  // ================= FAQ =================
+  function resetFaqForm() {
+    editingFaqId = null;
+    $("#faqQ").value = ""; $("#faqA").value = ""; $("#faqActive").checked = true;
+    $("#faqFormTitle").textContent = "Thêm câu hỏi mới";
+    $("#btnSaveFaq").textContent = "+ Thêm câu hỏi";
+    $("#btnCancelFaqEdit").style.display = "none";
+  }
+  function startEditFaq(id) {
+    const f = FAQ_ITEMS.find((x) => x.id === id);
+    if (!f) return;
+    editingFaqId = id;
+    $("#faqQ").value = f.q; $("#faqA").value = f.a; $("#faqActive").checked = f.active !== false;
+    $("#faqFormTitle").textContent = "Sửa câu hỏi";
+    $("#btnSaveFaq").textContent = "💾 Lưu thay đổi";
+    $("#btnCancelFaqEdit").style.display = "";
+    $("#tab-faqs").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  $("#btnCancelFaqEdit").addEventListener("click", resetFaqForm);
+
+  function renderFaqAdminList() {
+    if (!FAQ_ITEMS.length) { $("#faqAdminList").innerHTML = `<div class="empty">Chưa có câu hỏi nào — thêm ở form phía trên.</div>`; return; }
+    $("#faqAdminList").innerHTML = FAQ_ITEMS.map((f) => `
+      <div class="card">
+        <div class="top">
+          <b class="name">${esc(f.q)}</b>
+          <span class="pill" style="background:${f.active ? "#15803d" : "#64748b"}">${f.active ? "ĐANG HIỆN" : "ĐANG ẨN"}</span>
+        </div>
+        <div class="meta">${esc(f.a)}</div>
+        <div class="acts">
+          <button class="btn sm ghost" data-faqedit="${f.id}">✏️ Sửa</button>
+          <button class="btn sm" data-faqtoggle="${f.id}">${f.active ? "Ẩn khỏi trang chủ" : "Hiện lại"}</button>
+          <button class="btn sm danger" data-faqdel="${f.id}">Xóa</button>
+        </div>
+      </div>`).join("");
+
+    $$("#faqAdminList [data-faqedit]").forEach((b) => b.addEventListener("click", () => startEditFaq(Number(b.dataset.faqedit))));
+    $$("#faqAdminList [data-faqtoggle]").forEach((b) => b.addEventListener("click", async () => {
+      const f = FAQ_ITEMS.find((x) => x.id === Number(b.dataset.faqtoggle));
+      if (!f) return;
+      await api("/api/faqs", "POST", { action: "update", id: f.id, active: !f.active });
+      await loadAll(true);
+    }));
+    $$("#faqAdminList [data-faqdel]").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm("Xóa câu hỏi này? Không thể hoàn tác.")) return;
+      const id = Number(b.dataset.faqdel);
+      await api("/api/faqs", "POST", { action: "delete", id });
+      if (editingFaqId === id) resetFaqForm();
+      await loadAll(true);
+    }));
+  }
+
+  $("#reloadFaqs").addEventListener("click", () => loadAll());
+  $("#btnSaveFaq").addEventListener("click", async () => {
+    const q = $("#faqQ").value.trim(), a = $("#faqA").value.trim();
+    if (!q || !a) { alert("Vui lòng nhập đủ câu hỏi và câu trả lời."); return; }
+    const btn = $("#btnSaveFaq");
+    btn.disabled = true; btn.textContent = "Đang lưu...";
+    const payload = { q, a, active: $("#faqActive").checked };
+    const r = editingFaqId
+      ? await api("/api/faqs", "POST", Object.assign({ action: "update", id: editingFaqId }, payload))
+      : await api("/api/faqs", "POST", Object.assign({ action: "add" }, payload));
+    btn.disabled = false;
+    if (!r.ok) { alert((r.data && r.data.error) || "Không lưu được."); btn.textContent = editingFaqId ? "💾 Lưu thay đổi" : "+ Thêm câu hỏi"; return; }
+    resetFaqForm();
+    await loadAll(true);
+  });
+
+  // ================= ĐÁNH GIÁ KHÁCH HÀNG =================
+  function resetReviewForm() {
+    editingReviewId = null;
+    $("#rvName").value = ""; $("#rvRole").value = ""; $("#rvStars").value = "5"; $("#rvText").value = ""; $("#rvActive").checked = true;
+    $("#reviewFormTitle").textContent = "Thêm đánh giá mới";
+    $("#btnSaveReview").textContent = "+ Thêm đánh giá";
+    $("#btnCancelReviewEdit").style.display = "none";
+  }
+  function startEditReview(id) {
+    const r = REVIEW_ITEMS.find((x) => x.id === id);
+    if (!r) return;
+    editingReviewId = id;
+    $("#rvName").value = r.name; $("#rvRole").value = r.role || ""; $("#rvStars").value = r.stars || 5;
+    $("#rvText").value = r.text; $("#rvActive").checked = r.active !== false;
+    $("#reviewFormTitle").textContent = "Sửa đánh giá của " + r.name;
+    $("#btnSaveReview").textContent = "💾 Lưu thay đổi";
+    $("#btnCancelReviewEdit").style.display = "";
+    $("#tab-reviews").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  $("#btnCancelReviewEdit").addEventListener("click", resetReviewForm);
+
+  function renderReviewAdminList() {
+    if (!REVIEW_ITEMS.length) { $("#reviewAdminList").innerHTML = `<div class="empty">Chưa có đánh giá nào — thêm ở form phía trên.</div>`; return; }
+    $("#reviewAdminList").innerHTML = REVIEW_ITEMS.map((r) => `
+      <div class="card">
+        <div class="top">
+          <div><b class="name">${esc(r.name)}</b> · ${"★".repeat(r.stars)}</div>
+          <span class="pill" style="background:${r.active ? "#15803d" : "#64748b"}">${r.active ? "ĐANG HIỆN" : "ĐANG ẨN"}</span>
+        </div>
+        <div class="meta">${esc(r.role || "")}</div>
+        <div class="msg">“${esc(r.text)}”</div>
+        <div class="acts">
+          <button class="btn sm ghost" data-rvedit="${r.id}">✏️ Sửa</button>
+          <button class="btn sm" data-rvtoggle="${r.id}">${r.active ? "Ẩn khỏi trang chủ" : "Hiện lại"}</button>
+          <button class="btn sm danger" data-rvdel="${r.id}">Xóa</button>
+        </div>
+      </div>`).join("");
+
+    $$("#reviewAdminList [data-rvedit]").forEach((b) => b.addEventListener("click", () => startEditReview(Number(b.dataset.rvedit))));
+    $$("#reviewAdminList [data-rvtoggle]").forEach((b) => b.addEventListener("click", async () => {
+      const r = REVIEW_ITEMS.find((x) => x.id === Number(b.dataset.rvtoggle));
+      if (!r) return;
+      await api("/api/reviews", "POST", { action: "update", id: r.id, active: !r.active });
+      await loadAll(true);
+    }));
+    $$("#reviewAdminList [data-rvdel]").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm("Xóa đánh giá này? Không thể hoàn tác.")) return;
+      const id = Number(b.dataset.rvdel);
+      await api("/api/reviews", "POST", { action: "delete", id });
+      if (editingReviewId === id) resetReviewForm();
+      await loadAll(true);
+    }));
+  }
+
+  $("#reloadReviews").addEventListener("click", () => loadAll());
+  $("#btnSaveReview").addEventListener("click", async () => {
+    const name = $("#rvName").value.trim(), text = $("#rvText").value.trim();
+    if (!name || !text) { alert("Vui lòng nhập đủ tên khách và nội dung đánh giá."); return; }
+    const btn = $("#btnSaveReview");
+    btn.disabled = true; btn.textContent = "Đang lưu...";
+    const payload = { name, role: $("#rvRole").value.trim(), stars: Number($("#rvStars").value), text, active: $("#rvActive").checked };
+    const r = editingReviewId
+      ? await api("/api/reviews", "POST", Object.assign({ action: "update", id: editingReviewId }, payload))
+      : await api("/api/reviews", "POST", Object.assign({ action: "add" }, payload));
+    btn.disabled = false;
+    if (!r.ok) { alert((r.data && r.data.error) || "Không lưu được."); btn.textContent = editingReviewId ? "💾 Lưu thay đổi" : "+ Thêm đánh giá"; return; }
+    resetReviewForm();
+    await loadAll(true);
+  });
+
+  // ================= THÔNG TIN CHUNG =================
+  function fillConfigForm() {
+    const c = SITE_CONFIG || {};
+    $("#cfBrand").value = c.brand || "";
+    $("#cfSlogan").value = c.slogan || "";
+    $("#cfHotline").value = c.hotline || "";
+    $("#cfHotlineDisplay").value = c.hotlineDisplay || "";
+    $("#cfZalo").value = c.zalo || "";
+    $("#cfEmail").value = c.email || "";
+    $("#cfAddress").value = c.address || "";
+    $("#cfMapLink").value = c.mapLink || "";
+    $("#cfFacebook").value = c.facebook || "";
+    $("#cfTiktok").value = c.tiktok || "";
+  }
+  $("#reloadConfig").addEventListener("click", () => loadAll());
+  $("#btnSaveConfig").addEventListener("click", async () => {
+    const btn = $("#btnSaveConfig");
+    btn.disabled = true; btn.textContent = "Đang lưu...";
+    const r = await api("/api/site-config", "POST", {
+      brand: $("#cfBrand").value.trim(),
+      slogan: $("#cfSlogan").value.trim(),
+      hotline: $("#cfHotline").value.trim(),
+      hotlineDisplay: $("#cfHotlineDisplay").value.trim(),
+      zalo: $("#cfZalo").value.trim(),
+      email: $("#cfEmail").value.trim(),
+      address: $("#cfAddress").value.trim(),
+      mapLink: $("#cfMapLink").value.trim(),
+      facebook: $("#cfFacebook").value.trim(),
+      tiktok: $("#cfTiktok").value.trim()
+    });
+    btn.disabled = false; btn.textContent = "💾 Lưu thông tin";
+    if (!r.ok) { alert((r.data && r.data.error) || "Không lưu được."); return; }
+    banner("");
+    alert("Đã lưu thông tin chung — website sẽ cập nhật trong ít phút.");
+    await loadAll(true);
+  });
+
   // ================= XUẤT CSV =================
   function downloadCSV(filename, rows) {
     const csv = "﻿" + rows.map((r) => r.map((c) => `"${String(c == null ? "" : c).replace(/"/g, '""')}"`).join(",")).join("\n");
@@ -771,7 +1263,7 @@
 
   // ================= TAB & ĐĂNG NHẬP =================
   function showTab(name) {
-    ["dash", "orders", "leads", "users", "vehicles", "drivers"].forEach((t) => { $("#tab-" + t).style.display = t === name ? "" : "none"; });
+    ["dash", "orders", "leads", "users", "vehicles", "drivers", "fleet", "faqs", "reviews", "siteconfig"].forEach((t) => { $("#tab-" + t).style.display = t === name ? "" : "none"; });
     $$("#tabs [data-tab]").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
   }
   $$("#tabs [data-tab]").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));

@@ -27,7 +27,7 @@
   }
 
   // ---------- Áp dụng CONFIG cho các liên kết liên hệ ----------
-  (function applyConfig() {
+  function applyConfig() {
     const tel = "tel:" + CONFIG.hotline;
     $$("[data-cfg^=telLink]").forEach((a) => { a.href = tel; a.textContent = a.textContent.replace(/[\d.]{10,}/, CONFIG.hotlineDisplay); });
     $$("[data-cfg^=zaloLink]").forEach((a) => { if (a.tagName === "A") a.href = CONFIG.zalo; });
@@ -37,7 +37,8 @@
     const ad = $("[data-cfg=address]"); if (ad) ad.textContent = CONFIG.address;
     $("#scZalo").href = CONFIG.zalo;
     $("#scCall").href = tel;
-  })();
+  }
+  applyConfig();
 
   // ---------- Menu di động ----------
   const menu = $("#menu");
@@ -181,7 +182,11 @@
 
   // ---------- Đặt xe ----------
   const bmCar = $("#bmCar");
-  FLEET.forEach((c) => bmCar.add(new Option(`${c.name} — ${fmt(c.priceDay)}/ngày`, c.id)));
+  function populateBookingCarSelect() {
+    bmCar.innerHTML = "";
+    FLEET.forEach((c) => bmCar.add(new Option(`${c.name} — ${fmt(c.priceDay)}/ngày`, c.id)));
+  }
+  populateBookingCarSelect();
   const bmPickup = $("#bmPickup");
   PICKUP_POINTS.forEach((p) => bmPickup.add(new Option(p.label, p.id)));
 
@@ -431,22 +436,25 @@
   restartRevTimer();
 
   // ---------- FAQ ----------
-  $("#faqList").innerHTML = FAQS.map((f, i) => `
-    <div class="faq reveal">
-      <button class="q" type="button" aria-expanded="false">
-        <span>${f.q}</span><span class="chev">▾</span>
-      </button>
-      <div class="a"><p>${f.a}</p></div>
-    </div>`).join("");
-  $$(".faq .q").forEach((btn) =>
-    btn.addEventListener("click", () => {
-      const faq = btn.closest(".faq");
-      const open = faq.classList.toggle("open");
-      btn.setAttribute("aria-expanded", open);
-      const a = $(".a", faq);
-      a.style.maxHeight = open ? a.scrollHeight + "px" : "0";
-    })
-  );
+  function renderFaqList() {
+    $("#faqList").innerHTML = FAQS.map((f, i) => `
+      <div class="faq reveal">
+        <button class="q" type="button" aria-expanded="false">
+          <span>${f.q}</span><span class="chev">▾</span>
+        </button>
+        <div class="a"><p>${f.a}</p></div>
+      </div>`).join("");
+    $$(".faq .q").forEach((btn) =>
+      btn.addEventListener("click", () => {
+        const faq = btn.closest(".faq");
+        const open = faq.classList.toggle("open");
+        btn.setAttribute("aria-expanded", open);
+        const a = $(".a", faq);
+        a.style.maxHeight = open ? a.scrollHeight + "px" : "0";
+      })
+    );
+  }
+  renderFaqList();
 
   // ---------- Tra cứu đơn ----------
   function openLookup(e) {
@@ -501,4 +509,16 @@
 
   // ---------- Khởi tạo ----------
   renderFleet();
+
+  // ---------- Cập nhật khi có dữ liệu thật từ admin (js/livedata.js) ----------
+  // Trang hiện với dữ liệu tĩnh trước cho nhanh, có dữ liệu mới thì âm thầm vẽ lại —
+  // không chặn hiển thị ban đầu, không lỗi nếu API chậm/lỗi.
+  document.addEventListener("txd:live-data-ready", () => {
+    applyConfig();
+    renderFleet();
+    populateBookingCarSelect();
+    renderReviews();
+    renderFaqList();
+    $$(".reveal").forEach((el) => io.observe(el));
+  });
 })();

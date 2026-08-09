@@ -109,6 +109,72 @@ create table if not exists contracts (
 );
 create index if not exists contracts_order_idx on contracts (order_code);
 
+-- ==== Quản trị nội dung frontend (admin sửa được, không cần deploy code) ====
+
+-- Thông tin chung của website (1 dòng duy nhất, id luôn = 1)
+create table if not exists site_config (
+  id int primary key default 1,
+  brand text,
+  slogan text,
+  hotline text,
+  hotline_display text,
+  zalo text,
+  email text,
+  address text,
+  map_link text,
+  facebook text,
+  tiktok text,
+  updated_at timestamptz default now(),
+  constraint site_config_single_row check (id = 1)
+);
+
+-- Đội xe cho thuê hiển thị ở trang chủ (khác với "vehicles" — đó là xe THẬT theo
+-- biển số dùng để ghép vào đơn; đây là "mẫu xe" trong bảng giá/catalogue)
+create table if not exists fleet_cars (
+  id text primary key,           -- slug, vd "vf6" — khớp car_id bên bảng vehicles
+  name text not null,
+  segment text,                  -- mini | suv | 7cho | dichvu (dùng cho bộ lọc)
+  segment_label text,
+  seats int default 5,
+  range_text text,               -- vd "460 km/sạc"
+  price_day bigint default 0,
+  price_month bigint default 0,
+  over_km bigint default 0,
+  img_path text,                 -- đường dẫn ảnh trong bucket "car-images" (public)
+  tag text,
+  description text,
+  features jsonb default '[]',   -- mảng chuỗi
+  sort_order int default 0,
+  active boolean default true,
+  created_at timestamptz default now(),
+  updated_at timestamptz
+);
+create index if not exists fleet_cars_active_idx on fleet_cars (active, sort_order);
+
+create table if not exists faqs (
+  id bigint generated always as identity primary key,
+  question text not null,
+  answer text not null,
+  sort_order int default 0,
+  active boolean default true,
+  created_at timestamptz default now(),
+  updated_at timestamptz
+);
+create index if not exists faqs_active_idx on faqs (active, sort_order);
+
+create table if not exists reviews (
+  id bigint generated always as identity primary key,
+  name text not null,
+  role text,
+  stars int default 5,
+  text text not null,
+  sort_order int default 0,
+  active boolean default true,
+  created_at timestamptz default now(),
+  updated_at timestamptz
+);
+create index if not exists reviews_active_idx on reviews (active, sort_order);
+
 -- Khoá truy cập trực tiếp qua API công khai của Supabase — chỉ server
 -- (dùng service_role key) mới đọc/ghi được, trình duyệt không đụng được vào.
 alter table orders enable row level security;
@@ -117,3 +183,7 @@ alter table leads enable row level security;
 alter table contracts enable row level security;
 alter table vehicles enable row level security;
 alter table drivers enable row level security;
+alter table site_config enable row level security;
+alter table fleet_cars enable row level security;
+alter table faqs enable row level security;
+alter table reviews enable row level security;
