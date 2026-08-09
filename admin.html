@@ -525,7 +525,10 @@
   const ORDER_FLOW = ["new", "confirmed", "delivering", "renting", "completed"];
 
   function vehiclePickerHTML(o) {
-    const avail = VEHICLES.filter((v) => v.carId === o.carId && (v.status === "available" || v.id === o.vehicleId));
+    // So khớp theo carId HOẶC tên xe — đơn đặt trước khi chuyển đội xe sang quản trị nội
+    // dung (fleet_cars) còn lưu carId cũ ("vf5", "minio"...), trong khi kho xe thêm sau đó
+    // dùng carId mới theo fleet_cars ("vinfast-vf-5-plus"...). Tên xe vẫn khớp được cả 2 phía.
+    const avail = VEHICLES.filter((v) => (v.carId === o.carId || v.carName === o.car) && (v.status === "available" || v.id === o.vehicleId));
     if (!avail.length) {
       return `<div class="meta">Không có xe "${esc(o.car)}" nào đang rảnh trong kho. Vào tab 🚙 Kho xe để thêm xe mới.</div>`;
     }
