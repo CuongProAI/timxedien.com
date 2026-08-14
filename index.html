@@ -85,38 +85,41 @@
     </div>
 
     <!-- Hộp đặt xe nhanh -->
-    <div class="quickbook" id="quickbook">
-      <h3>Tìm xe điện cho chuyến đi của bạn</h3>
-      <p class="sub">Chọn thời gian — hệ thống lọc xe & báo giá ngay</p>
-      <div class="qb-tabs" id="qbTabs">
-        <button class="active" data-mode="day">Thuê theo ngày</button>
-        <button data-mode="month">Thuê theo tháng</button>
-      </div>
-      <div class="field">
-        <label>Điểm nhận xe</label>
-        <select id="qbPickup"></select>
-      </div>
-      <div class="field-row" id="qbDayFields">
-        <div class="field">
-          <label>Ngày nhận xe</label>
-          <input type="date" id="qbFrom">
+    <div class="hero-visual">
+      <img src="images/cars/vf8.png" alt="VinFast VF 8 — thuê xe điện tại TimXeDien.com Cần Thơ" class="hero-car" loading="eager">
+      <div class="quickbook" id="quickbook">
+        <h3>Tìm xe điện cho chuyến đi của bạn</h3>
+        <p class="sub">Chọn thời gian — hệ thống lọc xe & báo giá ngay</p>
+        <div class="qb-tabs" id="qbTabs">
+          <button class="active" data-mode="day">Thuê theo ngày</button>
+          <button data-mode="month">Thuê theo tháng</button>
         </div>
         <div class="field">
-          <label>Ngày trả xe</label>
-          <input type="date" id="qbTo">
+          <label>Điểm nhận xe</label>
+          <select id="qbPickup"></select>
         </div>
+        <div class="field-row" id="qbDayFields">
+          <div class="field">
+            <label>Ngày nhận xe</label>
+            <input type="date" id="qbFrom">
+          </div>
+          <div class="field">
+            <label>Ngày trả xe</label>
+            <input type="date" id="qbTo">
+          </div>
+        </div>
+        <div class="field" id="qbMonthFields" style="display:none">
+          <label>Số tháng thuê</label>
+          <select id="qbMonths">
+            <option value="1">1 tháng</option>
+            <option value="3">3 tháng</option>
+            <option value="6">6 tháng (giảm 6%)</option>
+            <option value="12">12 tháng (giảm 12%)</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-block" id="qbSearch">Tìm xe ngay →</button>
+        <p class="sub" style="margin:12px 0 0;text-align:center">Chỉ cần GPLX hạng B + CCCD · Cọc giữ chỗ 500k</p>
       </div>
-      <div class="field" id="qbMonthFields" style="display:none">
-        <label>Số tháng thuê</label>
-        <select id="qbMonths">
-          <option value="1">1 tháng</option>
-          <option value="3">3 tháng</option>
-          <option value="6">6 tháng (giảm 6%)</option>
-          <option value="12">12 tháng (giảm 12%)</option>
-        </select>
-      </div>
-      <button class="btn btn-primary btn-block" id="qbSearch">Tìm xe ngay →</button>
-      <p class="sub" style="margin:12px 0 0;text-align:center">Chỉ cần GPLX hạng B + CCCD · Cọc giữ chỗ 500k</p>
     </div>
   </div>
 </section>
