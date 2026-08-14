@@ -66,34 +66,30 @@
 
 <!-- ===== Hero ===== -->
 <section class="hero" id="top">
-  <div class="container hero-grid">
-    <div>
-      <span class="hero-badge">Nền tảng thuê xe điện VinFast tại Cần Thơ</span>
-      <h1>Thuê xe điện VinFast tại Cần Thơ — <span class="hl">tự lái</span> hoặc <span class="hl">có tài xế</span></h1>
-      <p class="lead">Đặt xe 1 phút, nhận xe trong 2 giờ. Sạc miễn phí tại trạm V-Green, giao xe tận nơi, đổi xe ngay khi có sự cố. Thuê theo ngày, theo tháng hoặc cả năm — lái xe xịn mà không cần mua xe.</p>
-      <div class="hero-cta">
-        <a href="#doi-xe" class="btn btn-primary">Xem đội xe & giá thuê</a>
-        <a href="co-tai-xe.html" class="btn btn-outline">Cần tài xế? Xem dịch vụ</a>
-        <a href="#thue-dai-han" class="btn btn-ghost">Thuê dài hạn tiết kiệm 12%</a>
-      </div>
-      <div class="hero-stats">
-        <div class="stat"><b data-count="10">10+</b><span>Dòng xe điện VinFast</span></div>
-        <div class="stat"><b>300km</b><span>Mỗi ngày thuê</span></div>
-        <div class="stat"><b>0đ</b><span>Phí sạc tại trạm V-Green</span></div>
-        <div class="stat"><b>24/7</b><span>Hỗ trợ trên đường</span></div>
-      </div>
+  <img src="images/cars/vf8.png" alt="VinFast VF 8 — thuê xe điện tại TimXeDien.com Cần Thơ" class="hero-car" loading="eager">
+  <div class="container hero-top">
+    <span class="hero-badge">Nền tảng thuê xe điện VinFast tại Cần Thơ</span>
+    <h1>Thuê xe điện VinFast tại Cần Thơ — <span class="hl">tự lái</span> hoặc <span class="hl">có tài xế</span></h1>
+    <p class="lead">Đặt xe 1 phút, nhận xe trong 2 giờ. Sạc miễn phí tại trạm V-Green, giao xe tận nơi, đổi xe ngay khi có sự cố. Thuê theo ngày, theo tháng hoặc cả năm — lái xe xịn mà không cần mua xe.</p>
+    <div class="hero-cta">
+      <a href="#doi-xe" class="btn btn-primary">Xem đội xe & giá thuê</a>
+      <a href="co-tai-xe.html" class="btn btn-outline">Cần tài xế? Xem dịch vụ</a>
+      <a href="#thue-dai-han" class="btn btn-ghost">Thuê dài hạn tiết kiệm 12%</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><b data-count="10">10+</b><span>Dòng xe điện VinFast</span></div>
+      <div class="stat"><b>300km</b><span>Mỗi ngày thuê</span></div>
+      <div class="stat"><b>0đ</b><span>Phí sạc tại trạm V-Green</span></div>
+      <div class="stat"><b>24/7</b><span>Hỗ trợ trên đường</span></div>
     </div>
 
-    <!-- Hộp đặt xe nhanh -->
-    <div class="hero-visual">
-      <img src="images/cars/vf8.png" alt="VinFast VF 8 — thuê xe điện tại TimXeDien.com Cần Thơ" class="hero-car" loading="eager">
-      <div class="quickbook" id="quickbook">
-        <h3>Tìm xe điện cho chuyến đi của bạn</h3>
-        <p class="sub">Chọn thời gian — hệ thống lọc xe & báo giá ngay</p>
-        <div class="qb-tabs" id="qbTabs">
-          <button class="active" data-mode="day">Thuê theo ngày</button>
-          <button data-mode="month">Thuê theo tháng</button>
-        </div>
+    <!-- Hộp đặt xe nhanh — bố cục ngang -->
+    <div class="quickbook-h" id="quickbook">
+      <div class="qb-tabs" id="qbTabs">
+        <button class="active" data-mode="day">Thuê theo ngày</button>
+        <button data-mode="month">Thuê theo tháng</button>
+      </div>
+      <div class="qbh-row">
         <div class="field">
           <label>Điểm nhận xe</label>
           <select id="qbPickup"></select>
@@ -117,9 +113,9 @@
             <option value="12">12 tháng (giảm 12%)</option>
           </select>
         </div>
-        <button class="btn btn-primary btn-block" id="qbSearch">Tìm xe ngay →</button>
-        <p class="sub" style="margin:12px 0 0;text-align:center">Chỉ cần GPLX hạng B + CCCD · Cọc giữ chỗ 500k</p>
+        <button class="btn btn-primary" id="qbSearch">Tìm xe ngay →</button>
       </div>
+      <p class="sub qbh-note">Chỉ cần GPLX hạng B + CCCD · Cọc giữ chỗ 500k</p>
     </div>
   </div>
 </section>
@@ -142,68 +138,12 @@
       <h2>Giải pháp xe điện linh hoạt cho mọi nhu cầu</h2>
       <p>Mô hình cho thuê linh hoạt như các nền tảng xe điện hàng đầu — nay đã có mặt tại Cần Thơ.</p>
     </div>
-    <div class="services-grid five">
-      <div class="svc reveal">
-        <div class="ico">🚗</div>
-        <h3>Thuê xe tự lái theo ngày</h3>
-        <p>Du lịch, về quê, đi công việc — thuê từ 1 ngày, thủ tục 15 phút.</p>
-        <ul>
-          <li>Từ 450.000đ/ngày · tối đa 300km/ngày</li>
-          <li>Giảm 5% từ 3 ngày, 10% từ 7 ngày</li>
-          <li>Nhận xe tại văn phòng, sân bay hoặc tận nhà</li>
-          <li>Xe giao sạc đầy pin, vệ sinh sạch sẽ</li>
-        </ul>
-        <a href="#doi-xe" class="btn btn-primary">Chọn xe ngay</a>
-      </div>
-      <div class="svc reveal">
-        <div class="ico">🧑‍✈️</div>
-        <h3>Thuê xe có tài xế</h3>
-        <p>Không muốn tự lái? Đã có tài xế thông thuộc Cần Thơ lo hết.</p>
-        <ul>
-          <li>Đưa đón sân bay từ 350.000đ/lượt</li>
-          <li>Theo giờ, theo ngày hoặc theo tháng</li>
-          <li>Tài xế chuyên nghiệp, xe điện êm ái</li>
-          <li>Xuất hóa đơn VAT cho doanh nghiệp</li>
-        </ul>
-        <a href="co-tai-xe.html" class="btn btn-outline">Xem dịch vụ tài xế</a>
-      </div>
-      <div class="svc reveal">
-        <div class="ico">📅</div>
-        <div class="svc-head"><h3>Thuê dài hạn tháng – năm</h3><span class="svc-tag">TIẾT KIỆM NHẤT</span></div>
-        <p>Cho cá nhân, tài xế dịch vụ (Xanh SM, Grab...) và doanh nghiệp.</p>
-        <ul>
-          <li>Rẻ hơn 40–50% so với thuê ngày</li>
-          <li>3.000km/tháng · bao bảo dưỡng, cứu hộ</li>
-          <li>Thuê 6 tháng giảm 6%, 12 tháng giảm 12%</li>
-          <li>Xuất hóa đơn VAT cho doanh nghiệp</li>
-        </ul>
-        <a href="#thue-dai-han" class="btn btn-primary">Xem bảng giá tháng</a>
-      </div>
-      <div class="svc reveal">
-        <div class="ico">🔑</div>
-        <h3>Mua xe điện đã qua sử dụng</h3>
-        <p>Xe điện kiểm định kỹ, lịch sử minh bạch, giá tốt hơn xe mới 15–30%.</p>
-        <ul>
-          <li>Kiểm tra pin & động cơ theo chuẩn hãng</li>
-          <li>Hỗ trợ trả góp tới 70% giá trị xe</li>
-          <li>Sang tên, đăng ký trọn gói</li>
-          <li>Thu cũ đổi mới, ký gửi bán xe</li>
-        </ul>
-        <a href="xe-cu.html" class="btn btn-outline">Xem xe đang bán</a>
-      </div>
-      <div class="svc reveal">
-        <div class="ico">🔧</div>
-        <h3>Phụ kiện xe điện</h3>
-        <p>Tư vấn trung thực & lắp đặt tận nhà tại Cần Thơ — chỉ món đáng tiền.</p>
-        <ul>
-          <li>Trụ sạc treo tường, sạc di động</li>
-          <li>Phim cách nhiệt, PPF, phủ ceramic</li>
-          <li>Camera hành trình, TPMS, thảm 6D</li>
-          <li>Hàng chính hãng, bảo hành 12 tháng</li>
-        </ul>
-        <a href="phu-kien.html" class="btn btn-outline">Xem phụ kiện</a>
-      </div>
+    <div class="slidebanner reveal" id="slideBanner">
+      <div id="slideTrack"><!-- JS render --></div>
+      <button class="slide-nav prev" id="slidePrev" aria-label="Dịch vụ trước">‹</button>
+      <button class="slide-nav next" id="slideNext" aria-label="Dịch vụ tiếp">›</button>
     </div>
+    <div class="rev-dots" id="slideDots"></div>
   </div>
 </section>
 

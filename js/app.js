@@ -40,6 +40,16 @@
   }
   applyConfig();
 
+  // ---------- Hero: vệt sáng đi theo chuột ----------
+  const heroEl = $(".hero");
+  if (heroEl && matchMedia("(hover:hover)").matches) {
+    heroEl.addEventListener("pointermove", (e) => {
+      const r = heroEl.getBoundingClientRect();
+      heroEl.style.setProperty("--mx", ((e.clientX - r.left) / r.width) * 100 + "%");
+      heroEl.style.setProperty("--my", ((e.clientY - r.top) / r.height) * 100 + "%");
+    });
+  }
+
   // ---------- Menu di động ----------
   const menu = $("#menu");
   $("#navToggle").addEventListener("click", () => menu.classList.toggle("open"));
@@ -399,6 +409,41 @@
       if (opt) $("#cfTopic").value = opt.value;
     })
   );
+
+  // ---------- Slide banner (dịch vụ) ----------
+  const SLIDES = [
+    { kicker: "🚗 Tự lái", title: "Thuê xe tự lái theo ngày", desc: "Từ 450.000đ/ngày · thủ tục 15 phút · giao xe tận nơi.", cta: "Chọn xe ngay", href: "#doi-xe", grad: "linear-gradient(135deg,#0a1628,#0d2038)" },
+    { kicker: "🧑‍✈️ Có tài xế", title: "Thuê xe có tài xế", desc: "Đưa đón sân bay từ 350.000đ/lượt — tài xế thông thuộc Cần Thơ lo hết.", cta: "Xem dịch vụ tài xế", href: "co-tai-xe.html", grad: "linear-gradient(135deg,#0a2a1e,#0d2038)" },
+    { kicker: "📅 Dài hạn", title: "Thuê dài hạn tháng – năm", desc: "Rẻ hơn 40–50% so với thuê ngày, giảm thêm tới 12% — hợp tài xế dịch vụ & doanh nghiệp.", cta: "Xem bảng giá tháng", href: "#thue-dai-han", grad: "linear-gradient(135deg,#0d2038,#0a1628)" },
+    { kicker: "🔑 Xe cũ", title: "Mua xe điện đã qua sử dụng", desc: "Kiểm định kỹ, lịch sử minh bạch, giá tốt hơn xe mới 15–30%.", cta: "Xem xe đang bán", href: "xe-cu.html", grad: "linear-gradient(135deg,#1f2937,#0a1628)" },
+    { kicker: "🔧 Phụ kiện", title: "Phụ kiện xe điện", desc: "Tư vấn trung thực, lắp tận nhà tại Cần Thơ, bảo hành 12 tháng.", cta: "Xem phụ kiện", href: "phu-kien.html", grad: "linear-gradient(135deg,#0a1628,#134e4a)" }
+  ];
+  let slideIdx = 0, slideTimer;
+  function renderSlides() {
+    $("#slideTrack").innerHTML = SLIDES.map((s, i) => `
+      <div class="slide ${i === slideIdx ? "active" : ""}" style="background:${s.grad}">
+        <span class="slide-kicker">${s.kicker}</span>
+        <h3>${s.title}</h3>
+        <p>${s.desc}</p>
+        <a href="${s.href}" class="btn btn-white">${s.cta}</a>
+      </div>`).join("");
+    $("#slideDots").innerHTML = SLIDES.map((_, i) =>
+      `<button class="${i === slideIdx ? "active" : ""}" data-i="${i}" aria-label="Dịch vụ ${i + 1}"></button>`).join("");
+    $$("#slideDots button").forEach((b) => b.addEventListener("click", () => showSlide(+b.dataset.i)));
+  }
+  function showSlide(i) {
+    slideIdx = (i + SLIDES.length) % SLIDES.length;
+    renderSlides();
+    restartSlideTimer();
+  }
+  function restartSlideTimer() {
+    clearInterval(slideTimer);
+    slideTimer = setInterval(() => showSlide(slideIdx + 1), 5000);
+  }
+  $("#slidePrev").addEventListener("click", () => showSlide(slideIdx - 1));
+  $("#slideNext").addEventListener("click", () => showSlide(slideIdx + 1));
+  renderSlides();
+  restartSlideTimer();
 
   // ---------- Đánh giá ----------
   let revIdx = 0, revTimer;

@@ -86,7 +86,7 @@ header.site{
 
 /* ---------- Hero ---------- */
 .hero{
-  position:relative;overflow:hidden;padding:80px 0 92px;
+  position:relative;overflow:hidden;padding:80px 0 64px;
   background:linear-gradient(160deg,var(--navy) 0%,var(--navy-2) 45%,#082a1e 100%);
 }
 .hero::before{
@@ -95,8 +95,12 @@ header.site{
     radial-gradient(620px 420px at 84% 6%,rgba(16,185,129,.32),transparent 65%),
     radial-gradient(480px 360px at 6% 96%,rgba(16,185,129,.14),transparent 60%);
 }
+.hero::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(440px 440px at var(--mx,50%) var(--my,10%),rgba(110,231,183,.20),transparent 70%);
+}
 .hero>.container{position:relative;z-index:1}
-.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center}
+.hero-top{max-width:740px}
 .hero-badge{
   display:inline-flex;align-items:center;gap:8px;background:rgba(16,185,129,.1);
   border:1px solid rgba(16,185,129,.3);color:var(--green-dd);font-size:13.5px;font-weight:600;
@@ -118,25 +122,28 @@ header.site{
 .stat b{display:block;font-size:28px;font-weight:800;color:var(--ink)}
 .stat span{font-size:13.5px;color:var(--mut)}
 
-.hero-visual{position:relative}
 .hero-car{
-  position:absolute;width:320px;max-width:60%;top:-64px;right:6%;z-index:0;
-  filter:drop-shadow(0 28px 34px rgba(0,0,0,.5));
+  position:absolute;width:360px;max-width:32%;top:36px;right:3%;z-index:0;
+  filter:drop-shadow(0 28px 34px rgba(0,0,0,.5));opacity:.92;
 }
-.quickbook{position:relative;z-index:1}
 
-/* Hộp đặt xe nhanh */
-.quickbook{
-  background:#fff;color:var(--txt);border:1px solid var(--line);border-radius:20px;padding:28px;
-  box-shadow:var(--shadow-lg);
+/* Hộp đặt xe nhanh — bố cục ngang */
+.quickbook-h{
+  position:relative;z-index:1;margin-top:40px;max-width:920px;
+  background:#fff;color:var(--txt);border-radius:20px;padding:22px 26px 20px;box-shadow:var(--shadow-lg);
 }
-.quickbook h3{font-size:19px;margin-bottom:4px;color:var(--ink)}
-.quickbook .sub{font-size:13.5px;color:var(--mut);margin-bottom:18px}
-.qb-tabs{display:flex;background:var(--mist);border-radius:12px;padding:5px;margin-bottom:16px}
+.qb-tabs{display:flex;background:var(--mist);border-radius:12px;padding:5px;margin-bottom:16px;max-width:320px}
 .qb-tabs button{
   flex:1;padding:9px 8px;border-radius:9px;font-weight:600;font-size:14px;color:var(--mut);transition:.2s;
 }
 .qb-tabs button.active{background:#fff;color:var(--green-d);box-shadow:var(--shadow)}
+.qbh-row{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap}
+.qbh-row>.field{flex:1;min-width:180px;margin-bottom:0}
+.qbh-row .field-row{display:flex;gap:14px;flex:2;min-width:280px}
+.qbh-row .field-row .field{min-width:130px;margin-bottom:0}
+.qbh-row #qbMonthFields{flex:2;min-width:200px}
+.qbh-row #qbSearch{flex:none;padding:12px 26px;white-space:nowrap}
+.qbh-note{margin-top:14px;font-size:13px}
 .field{margin-bottom:13px}
 .field label{display:block;font-size:13px;font-weight:600;color:#41564b;margin-bottom:6px}
 .field input,.field select,.field textarea{
@@ -321,6 +328,28 @@ body:not([data-page]) .longterm .hero-cta .btn-ghost:hover{background:rgba(255,2
 }
 .rev-nav.prev{left:-58px}.rev-nav.next{right:-58px}
 
+/* ---------- Slide banner (dịch vụ) ---------- */
+.slidebanner{position:relative;border-radius:24px;overflow:hidden;min-height:300px}
+.slide{
+  display:none;padding:56px 76px;min-height:300px;flex-direction:column;justify-content:center;gap:14px;color:#fff;
+}
+.slide.active{display:flex;animation:fadeUp .4s ease}
+.slide-kicker{
+  align-self:flex-start;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);
+  padding:6px 16px;border-radius:100px;font-size:13px;font-weight:700;
+}
+.slide h3{font-size:29px;font-weight:800;max-width:540px;letter-spacing:-.3px}
+.slide p{font-size:15px;color:#cdd6d2;max-width:480px}
+.slide .btn{align-self:flex-start;margin-top:8px}
+.slide-nav{
+  position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:100px;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:#fff;font-size:19px;
+  backdrop-filter:blur(6px);transition:.2s;
+}
+.slide-nav:hover{background:rgba(255,255,255,.24)}
+.slide-nav.prev{left:20px}
+.slide-nav.next{right:20px}
+
 /* ---------- FAQ ---------- */
 .faq-list{max-width:800px;margin:0 auto;display:grid;gap:12px}
 .faq{
@@ -472,9 +501,8 @@ footer{background:var(--navy);color:#aab4b0;padding:56px 0 0;font-size:14px}
   .nav-account .acct-label{display:none}
 }
 @media (max-width:992px){
-  .hero-grid{grid-template-columns:1fr;gap:40px}
   .hero h1{font-size:38px}
-  .hero-car{width:220px;top:-40px;right:0}
+  .hero-car{width:240px;top:16px;opacity:.5}
   .usp-grid{grid-template-columns:repeat(2,1fr)}
   .services-grid,.steps,.fleet-grid{grid-template-columns:repeat(2,1fr)}
   .longterm{grid-template-columns:1fr;padding:40px 30px}
@@ -488,6 +516,15 @@ footer{background:var(--navy);color:#aab4b0;padding:56px 0 0;font-size:14px}
   .hero{padding:52px 0 64px}
   .hero h1{font-size:31px}
   .hero-car{display:none}
+  .quickbook-h{padding:18px 18px 16px}
+  .qbh-row{flex-direction:column;align-items:stretch}
+  .qbh-row .field-row{flex-direction:column}
+  .qbh-row #qbSearch{width:100%}
+  .slide{padding:36px 24px;min-height:260px}
+  .slide h3{font-size:22px}
+  .slide-nav{width:36px;height:36px;font-size:16px}
+  .slide-nav.prev{left:10px}
+  .slide-nav.next{right:10px}
   .sec-head h2{font-size:26px}
   .services-grid,.steps,.fleet-grid,.usp-grid{grid-template-columns:1fr}
   .field-row{grid-template-columns:1fr}
