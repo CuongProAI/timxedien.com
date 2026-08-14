@@ -280,28 +280,6 @@ section.alt{background:var(--mist)}
 }
 .rev-nav.prev{left:-58px}.rev-nav.next{right:-58px}
 
-/* ---------- Khuyến mãi ---------- */
-.promo-wrap{position:relative}
-.promo-track{
-  display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;
-  scrollbar-width:none;padding:4px 4px 8px;
-}
-.promo-track::-webkit-scrollbar{display:none}
-.promo-card{
-  flex:0 0 300px;scroll-snap-align:start;background:#fff;border:1px solid var(--line);
-  border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:10px;transition:.2s;
-}
-.promo-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:rgba(16,185,129,.35)}
-.promo-card .ico{font-size:30px}
-.promo-badge{
-  align-self:flex-start;background:rgba(16,185,129,.1);color:var(--green-d);
-  font-size:12.5px;font-weight:700;padding:5px 14px;border-radius:100px;letter-spacing:.2px;
-}
-.promo-card h3{font-size:29px;font-weight:800;color:var(--ink)}
-.promo-card p{font-size:14px;color:var(--mut);line-height:1.65;flex:1}
-.promo-card .btn{align-self:flex-start;margin-top:2px}
-@media (max-width:640px){.promo-card{flex-basis:250px}}
-
 /* ---------- FAQ ---------- */
 .faq-list{max-width:800px;margin:0 auto;display:grid;gap:12px}
 .faq{
