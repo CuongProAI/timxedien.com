@@ -1,11 +1,12 @@
-// API gộp 3 loại nội dung nhẹ của trang chủ: thông tin chung (site_config),
-// câu hỏi thường gặp (faqs), đánh giá khách hàng (reviews) — gộp chung 1 file
-// để không vượt giới hạn 12 Serverless Functions của gói Hobby trên Vercel.
+// API gộp nội dung nhẹ của trang chủ: thông tin chung (site_config),
+// câu hỏi thường gặp (faqs), đánh giá khách hàng (reviews), chatbot tư vấn —
+// gộp chung 1 file để không vượt giới hạn 12 Serverless Functions của gói Hobby trên Vercel.
 // api/fleet.js tách riêng vì có thêm phần upload ảnh.
 //
 // GET  /api/content?type=config|faqs|reviews  — công khai (chỉ mục đang bật,
 //      trừ khi gửi đúng x-admin-key thì trả cả mục đang ẩn)
 // POST /api/content  { type, action: add|update|delete, ... }  — luôn cần ADMIN_KEY
+// POST /api/content  { type: "chatbot", message, history }     — công khai, không cần ADMIN_KEY
 const { supabase } = require('./_lib');
 
 function isAdmin(req) {
@@ -24,6 +25,76 @@ function rowToConfig(row) {
 }
 function rowToFaq(row) { return { id: row.id, q: row.question, a: row.answer, active: row.active, sortOrder: row.sort_order }; }
 function rowToReview(row) { return { id: row.id, name: row.name, role: row.role, stars: row.stars, text: row.text, active: row.active, sortOrder: row.sort_order }; }
+
+const money = (n) => Number(n || 0).toLocaleString('vi-VN') + 'đ';
+
+async function buildChatbotContext() {
+  const [cfgRes, faqRes, carRes] = await Promise.all([
+    supabase.from('site_config').select('*').eq('id', 1).maybeSingle(),
+    supabase.from('faqs').select('question,answer').eq('active', true).order('sort_order', { ascending: true }),
+    supabase.from('fleet_cars').select('name,segment_label,seats,range_text,price_day,price_month,over_km').eq('active', true).order('sort_order', { ascending: true })
+  ]);
+  const cfg = cfgRes.data || {};
+  const faqs = faqRes.data || [];
+  const cars = carRes.data || [];
+
+  const carLines = cars.map((c) =>
+    `- ${c.name} (${c.segment_label || ''}, ${c.seats || '?'} chỗ, ${c.range_text || '?'}): ${money(c.price_day)}/ngày, ${money(c.price_month)}/tháng, phụ phí vượt km ${money(c.over_km)}/km`
+  ).join('\n') || '(chưa có dữ liệu xe)';
+
+  const faqLines = faqs.map((f) => `Hỏi: ${f.question}\nĐáp: ${f.answer}`).join('\n\n') || '(chưa có FAQ)';
+
+  return `Bạn là trợ lý tư vấn khách hàng trên website của "${cfg.brand || 'TimXeDien.com'}" — dịch vụ cho thuê xe điện tại Cần Thơ.
+Thông tin liên hệ: Hotline ${cfg.hotline_display || cfg.hotline || ''}, Zalo ${cfg.zalo || ''}, Địa chỉ: ${cfg.address || ''}.
+
+DANH SÁCH XE ĐANG CHO THUÊ:
+${carLines}
+
+CÂU HỎI THƯỜNG GẶP:
+${faqLines}
+
+QUY TẮC TRẢ LỜI:
+- Trả lời bằng tiếng Việt, ngắn gọn, thân thiện, tối đa 4-5 câu.
+- CHỈ dùng thông tin ở trên để trả lời về giá, xe, chính sách. Nếu không có đủ thông tin để trả lời chính xác, hãy nói thật là chưa rõ và mời khách gọi hotline hoặc nhắn Zalo — TUYỆT ĐỐI không bịa số liệu, giá cả hay chính sách.
+- Chỉ tư vấn các chủ đề liên quan đến thuê xe điện của công ty, từ chối lịch sự nếu khách hỏi ngoài chủ đề.`;
+}
+
+async function handleChatbot(req, res, body) {
+  if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: 'Chatbot chưa được cấu hình' });
+
+  const message = clip(body.message, 500);
+  if (!message) return res.status(400).json({ error: 'Thiếu nội dung tin nhắn' });
+
+  const rawHistory = Array.isArray(body.history) ? body.history.slice(-6) : [];
+  const history = rawHistory
+    .filter((h) => h && (h.role === 'user' || h.role === 'model') && typeof h.text === 'string')
+    .map((h) => ({ role: h.role, parts: [{ text: clip(h.text, 500) }] }));
+
+  try {
+    const systemPrompt = await buildChatbotContext();
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': process.env.GEMINI_API_KEY },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: [...history, { role: 'user', parts: [{ text: message }] }],
+        generationConfig: { maxOutputTokens: 400, temperature: 0.4 }
+      })
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      console.error('gemini error', data);
+      return res.status(502).json({ error: 'Chatbot đang bận, vui lòng thử lại hoặc nhắn Zalo giúp mình.' });
+    }
+    const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
+    const reply = (parts || []).map((p) => p.text || '').join('').trim();
+    if (!reply) return res.status(502).json({ error: 'Chatbot chưa trả lời được, vui lòng thử lại.' });
+    return res.status(200).json({ ok: true, reply });
+  } catch (e) {
+    console.error('chatbot error', e);
+    return res.status(500).json({ error: 'Lỗi hệ thống' });
+  }
+}
 
 module.exports = async (req, res) => {
   try {
@@ -53,10 +124,13 @@ module.exports = async (req, res) => {
     }
 
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-    if (!isAdmin(req)) return res.status(401).json({ error: 'Sai mật khẩu quản trị' });
 
     const body = req.body || {};
     const action = String(body.action || '');
+
+    if (type === 'chatbot') return handleChatbot(req, res, body);
+
+    if (!isAdmin(req)) return res.status(401).json({ error: 'Sai mật khẩu quản trị' });
 
     // ---------- Thông tin chung ----------
     if (type === 'config') {
