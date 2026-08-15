@@ -78,7 +78,7 @@ async function handleChatbot(req, res, body) {
       body: JSON.stringify({
         system_instruction: { parts: [{ text: systemPrompt }] },
         contents: [...history, { role: 'user', parts: [{ text: message }] }],
-        generationConfig: { maxOutputTokens: 400, temperature: 0.4 }
+        generationConfig: { maxOutputTokens: 1200, temperature: 0.4 }
       })
     });
     const data = await r.json();
@@ -86,8 +86,10 @@ async function handleChatbot(req, res, body) {
       console.error('gemini error', data);
       return res.status(502).json({ error: 'Chatbot đang bận, vui lòng thử lại hoặc nhắn Zalo giúp mình.' });
     }
-    const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
-    const reply = (parts || []).map((p) => p.text || '').join('').trim();
+    const cand = data && data.candidates && data.candidates[0];
+    const parts = cand && cand.content && cand.content.parts;
+    const reply = (parts || []).filter((p) => !p.thought).map((p) => p.text || '').join('').trim();
+    if (reply && cand.finishReason && cand.finishReason !== 'STOP') console.error('gemini finishReason', cand.finishReason);
     if (!reply) return res.status(502).json({ error: 'Chatbot chưa trả lời được, vui lòng thử lại.' });
     return res.status(200).json({ ok: true, reply });
   } catch (e) {
