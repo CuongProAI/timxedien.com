@@ -288,7 +288,7 @@
         <input type="checkbox" id="ctAgree">
         <span>Tôi đã đọc, hiểu rõ và đồng ý với toàn bộ nội dung hợp đồng trên.</span>
       </label>
-      <button class="btn btn-outline btn-block" id="ctDownload" style="margin-bottom:10px" disabled>⬇ Tải hợp đồng</button>
+      <button class="btn btn-outline btn-block" id="ctDownload" style="margin-bottom:10px" disabled>⬇ Tải hợp đồng Word (.doc)</button>
       <button class="btn btn-primary btn-block" id="ctSubmit" disabled>Xác nhận ký hợp đồng</button>
     </div>
   </div>
@@ -308,6 +308,7 @@
 <script src="js/authmodal.js"></script>
 <script src="js/page.js"></script>
 <script src="js/chatbot.js"></script>
+<script src="js/contract-doc.js"></script>
 <script>
 (function () {
   "use strict";
@@ -592,7 +593,7 @@
   });
 
   // ---------- Ký hợp đồng điện tử ----------
-  let currentContractCode = "", currentContractContent = "", signatureHasInk = false, signatureDrawing = false, contractAlreadySigned = false;
+  let currentContractCode = "", currentContractContent = "", currentContractSignature = "", currentContractSigner = "", currentContractSignedAt = "", currentContractHash = "", signatureHasInk = false, signatureDrawing = false, contractAlreadySigned = false;
   const signatureCanvas = $("#ctSignatureCanvas");
   const signatureCtx = signatureCanvas.getContext("2d");
 
@@ -636,6 +637,7 @@
   async function openContract(code) {
     currentContractCode = code;
     currentContractContent = "";
+    currentContractSignature = ""; currentContractSigner = ""; currentContractSignedAt = ""; currentContractHash = "";
     contractAlreadySigned = false;
     $("#ctMeta").textContent = code;
     $("#ctContent").textContent = "Đang tải nội dung hợp đồng...";
@@ -659,6 +661,10 @@
       if (!r.ok) throw new Error(data.error || "Không tải được hợp đồng");
       $("#ctContent").textContent = data.content;
       currentContractContent = data.content || "";
+      currentContractSignature = data.signatureImage || "";
+      currentContractSigner = data.signerName || "";
+      currentContractSignedAt = data.signedAt || "";
+      currentContractHash = data.contentHash || "";
       $("#ctDownload").disabled = !currentContractContent;
       $("#ctSignerName").value = data.signerName || $("#ctSignerName").value;
       if (data.signed) {
@@ -686,10 +692,7 @@
 
   $("#ctDownload").addEventListener("click", () => {
     if (!currentContractContent) return;
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([currentContractContent], { type: "text/plain;charset=utf-8" }));
-    a.download = "hop-dong-" + currentContractCode + ".txt";
-    a.click(); URL.revokeObjectURL(a.href);
+    TXDContractDoc.download({ code: currentContractCode, content: currentContractContent, signature: currentContractSignature, signerName: currentContractSigner || $("#ctSignerName").value.trim(), signedAt: currentContractSignedAt, contentHash: currentContractHash });
   });
 
   $("#ctSubmit").addEventListener("click", async () => {

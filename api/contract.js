@@ -27,6 +27,38 @@ function fmtDate(d) {
   return isNaN(dt.getTime()) ? BLANK : dt.toLocaleDateString('vi-VN');
 }
 
+function moneyWords(value) {
+  const digits = ['không', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+  const readBlock = (n, full) => {
+    const out = [], hundred = Math.floor(n / 100), rest = n % 100, ten = Math.floor(rest / 10), unit = rest % 10;
+    if (hundred || full) out.push(digits[hundred] + ' trăm');
+    if (ten > 1) {
+      out.push(digits[ten] + ' mươi');
+      if (unit) out.push(unit === 1 ? 'mốt' : unit === 5 ? 'lăm' : unit === 4 ? 'tư' : digits[unit]);
+    } else if (ten === 1) {
+      out.push('mười');
+      if (unit) out.push(unit === 5 ? 'lăm' : digits[unit]);
+    } else if (unit) {
+      if (hundred || full) out.push('lẻ');
+      out.push(digits[unit]);
+    }
+    return out.join(' ');
+  };
+  let n = Math.max(0, Math.round(Number(value) || 0));
+  if (!n) return 'Không đồng';
+  const groups = [], labels = ['', 'nghìn', 'triệu', 'tỷ'];
+  while (n > 0) { groups.unshift(n % 1000); n = Math.floor(n / 1000); }
+  const parts = [];
+  groups.forEach((g, i) => {
+    if (!g) return;
+    const level = groups.length - 1 - i;
+    parts.push(readBlock(g, parts.length > 0 && g < 100));
+    if (level) parts.push(labels[level] || 'tỷ');
+  });
+  const text = parts.join(' ').replace(/\s+/g, ' ').trim();
+  return text.charAt(0).toUpperCase() + text.slice(1) + ' đồng';
+}
+
 function buildContract(order, user) {
   const now = new Date();
   const total = Number(order.total || 0);
@@ -49,7 +81,9 @@ BÊN CHO THUÊ XE (BÊN A): TIMXEDIEN.COM
 Địa chỉ: TP. Cần Thơ
 Điện thoại: 0939.099.018
 Email: timxedien@gmail.com
-Đại diện: Người có thẩm quyền của TimXeDien.com
+Mã số thuế/CCCD: ${BLANK}
+Đại diện: ${BLANK}                    Chức vụ: ${BLANK}
+Số tài khoản: ${BLANK}                Tại ngân hàng: ${BLANK}
 
 BÊN THUÊ XE (BÊN B):
 Họ và tên: ${user.name}
@@ -59,35 +93,39 @@ GPLX số: ${val(user.license_number)}  cấp ngày ${fmtDate(user.license_issue
 Địa chỉ tạm trú: ${user.address_temp || '(không có)'}
 Điện thoại: ${user.phone}
 
-Sau khi bàn bạc, hai Bên cùng thống nhất ký kết Hợp đồng cho thuê xe ô tô tự lái với các điều khoản sau:
+Sau khi trao đổi trên tinh thần tự nguyện, bình đẳng và thiện chí, các Bên thống nhất giao kết Hợp đồng thuê xe ô tô điện tự lái (sau đây gọi là “Hợp đồng”) với các điều khoản sau đây:
 
 ĐIỀU 1: ĐỐI TƯỢNG HỢP ĐỒNG
-Bên B có nhu cầu thuê xe ô tô điện tự lái và Bên A đồng ý cho Bên B thuê 01 (một) chiếc xe ô tô có thông tin như sau:
+Bên A đồng ý cho Bên B thuê và Bên B đồng ý thuê 01 (một) xe ô tô điện tự lái có thông tin như sau:
 Biển số xe: ${val(order.car_plate)}       Nhãn hiệu: ${order.car}
 Sản xuất năm: ${val(order.car_year)}       Màu: ${val(order.car_color)}
 Giấy đăng ký ô tô số: ${val(order.car_reg_no)}    Ngày cấp: ${fmtDate(order.car_reg_date)}    Tên chủ xe: ${order.car_reg_owner || 'TimXeDien.com'}
+Tình trạng xe, mức pin, số ki-lô-mét và tài sản kèm theo được xác nhận tại Biên bản giao nhận xe, là bộ phận không tách rời của Hợp đồng.
 
 ĐIỀU 2: THỜI GIAN THUÊ, PHỤ PHÍ PHÁT SINH
-Thời gian thuê: ${order.time_range}
-Phụ phí phát sinh (nếu có): tính theo bảng giá hiện hành của Bên A đối với phần vượt giới hạn km hoặc vượt thời gian thuê đã thoả thuận.
+1. Thời gian thuê: ${order.time_range}
+2. Địa điểm giao, nhận xe: ${val(order.pickup)}.
+3. Phụ phí vượt giới hạn quãng đường, quá thời gian thuê và các chi phí phát sinh khác (nếu có) được xác định theo bảng giá đã được Bên B biết và chấp thuận tại thời điểm đặt xe.
 
 ĐIỀU 3: GIÁ TRỊ HỢP ĐỒNG, HÌNH THỨC THANH TOÁN
-Đơn giá thuê xe: theo bảng giá Bên A công bố tại thời điểm đặt xe (${order.mode === 'month' ? 'tính theo tháng' : 'tính theo ngày'}).
-Giá trị hợp đồng (tạm tính): ${total.toLocaleString('vi-VN')}đ
-Hình thức thanh toán: Bên B đã thanh toán tiền cọc giữ chỗ 500.000đ (trừ vào giá trị hợp đồng); số tiền còn lại Bên B thanh toán cho Bên A khi nhận xe bằng tiền mặt hoặc chuyển khoản.
+1. Đơn giá thuê xe: theo bảng giá Bên A công bố và Bên B chấp thuận tại thời điểm đặt xe (${order.mode === 'month' ? 'tính theo tháng' : 'tính theo ngày'}).
+2. Giá trị Hợp đồng tạm tính: ${total.toLocaleString('vi-VN')} đồng (Bằng chữ: ${moneyWords(total)}).
+3. Tiền đặt cọc giữ chỗ: 500.000 đồng. Khoản tiền đã nộp (nếu có) được khấu trừ vào số tiền Bên B phải thanh toán.
+4. Số tiền còn lại và các khoản phát sinh hợp lệ được thanh toán bằng tiền mặt hoặc chuyển khoản theo xác nhận của Bên A. Việc hoàn trả tiền đặt cọc trách nhiệm được thực hiện sau khi hai Bên hoàn tất kiểm tra và bàn giao lại xe.
 
 ĐIỀU 4: QUYỀN VÀ NGHĨA VỤ CỦA BÊN A
-1. Giao xe đúng tình trạng, đủ giấy tờ hợp lệ, sạc đầy pin tại thời điểm giao xe cho Bên B.
+1. Giao xe đúng chủng loại, tình trạng và thời điểm đã thỏa thuận; cung cấp giấy tờ cần thiết để xe đủ điều kiện tham gia giao thông.
 2. Hướng dẫn Bên B sử dụng xe, hệ thống sạc và cách xử lý tình huống khẩn cấp.
 3. Hỗ trợ cứu hộ, đổi xe tương đương nếu xe gặp sự cố kỹ thuật không do lỗi Bên B.
-4. Hoàn trả đầy đủ tiền cọc trách nhiệm (nếu có) khi Bên B trả xe đúng thoả thuận, không phát sinh hư hỏng.
+4. Thông báo kịp thời cho Bên B về các chi phí phát sinh có căn cứ và hoàn trả tiền đặt cọc trách nhiệm (nếu có) sau khi các nghĩa vụ đã được đối soát.
 
 ĐIỀU 5: QUYỀN VÀ NGHĨA VỤ CỦA BÊN B
-1. Sử dụng xe đúng mục đích, đúng người đứng tên hợp đồng, không giao xe cho người khác điều khiển.
-2. Không sử dụng xe vào mục đích vi phạm pháp luật, vận chuyển hàng cấm, đua xe.
-3. Bảo quản xe, chịu trách nhiệm bồi thường theo giá trị thực tế nếu xe hư hỏng, mất mát do lỗi của Bên B trong thời gian thuê.
-4. Trả xe đúng thời gian, địa điểm đã thoả thuận; báo ngay cho Bên A qua hotline nếu có sự cố phát sinh.
-5. Thanh toán đầy đủ, đúng hạn giá trị hợp đồng và các khoản phụ phí phát sinh (nếu có) cho Bên A.
+1. Cung cấp thông tin trung thực; có giấy phép lái xe phù hợp và chịu trách nhiệm về tư cách điều khiển phương tiện trong suốt thời gian thuê.
+2. Sử dụng xe đúng mục đích, đúng người đứng tên Hợp đồng; không giao xe cho người khác điều khiển nếu chưa được Bên A chấp thuận.
+3. Không sử dụng xe để thực hiện hành vi vi phạm pháp luật, vận chuyển hàng cấm, đua xe hoặc cầm cố, thế chấp, cho thuê lại dưới bất kỳ hình thức nào.
+4. Bảo quản xe và tài sản kèm theo; chịu trách nhiệm đối với thiệt hại thực tế phát sinh do lỗi của mình theo quy định pháp luật và thỏa thuận của các Bên.
+5. Trường hợp xảy ra tai nạn, hư hỏng hoặc mất mát, Bên B phải bảo đảm an toàn, thông báo ngay cho Bên A và cơ quan có thẩm quyền khi cần thiết; không tự ý thỏa thuận bồi thường hoặc sửa chữa xe nếu chưa có ý kiến của Bên A.
+6. Trả xe đúng thời gian, địa điểm, tình trạng đã thỏa thuận và thanh toán đầy đủ các khoản đến hạn.
 
 ĐIỀU 6: SỰ KIỆN BẤT KHẢ KHÁNG VÀ GIẢI QUYẾT TRANH CHẤP
 1. Bên gặp sự kiện bất khả kháng phải thông báo cho Bên còn lại trong thời gian sớm nhất và cung cấp tài liệu chứng minh khi được yêu cầu.
@@ -98,10 +136,6 @@ Hình thức thanh toán: Bên B đã thanh toán tiền cọc giữ chỗ 500.0
 2. Hợp đồng được lập dưới dạng thông điệp dữ liệu, có thể truy cập và sử dụng để tham chiếu. Các Bên thống nhất sử dụng phương thức xác nhận điện tử trên hệ thống TimXeDien.com.
 3. Hợp đồng có hiệu lực từ thời điểm Bên B hoàn tất xác nhận điện tử và kéo dài đến khi các Bên hoàn thành toàn bộ nghĩa vụ, trừ nghĩa vụ còn tiếp tục theo thỏa thuận hoặc pháp luật.
 4. Nội dung hợp đồng, nét ký điện tử, họ tên người ký, tài khoản xác minh, thời điểm ký và thông tin kỹ thuật kèm theo được lưu cùng một hồ sơ giao dịch để đối chiếu khi cần thiết.
-
-                         ĐẠI DIỆN BÊN A                         BÊN B - NGƯỜI THUÊ
-                         TIMXEDIEN.COM                          ${user.name}
-                         (Xác nhận theo hồ sơ hệ thống)         (Ký và ghi rõ họ tên trên hệ thống)
 
 XÁC NHẬN ĐIỆN TỬ CỦA BÊN B
 Bằng việc tự tay tạo nét ký, tích chọn đồng ý và bấm "Xác nhận ký hợp đồng", Bên B xác nhận đã đọc, hiểu, tự nguyện chấp thuận toàn bộ nội dung Hợp đồng và chịu trách nhiệm về thông tin đã cung cấp.`;

@@ -451,11 +451,12 @@
   <div class="contract-dialog-body">
     <div class="contract-doc" id="adminContractContent">Đang tải...</div>
     <div class="admin-signature" id="adminSignature"><b>CHỮ KÝ ĐIỆN TỬ — BÊN B (NGƯỜI THUÊ)</b><img id="adminSignatureImage" alt="Chữ ký điện tử của người thuê"><div class="meta" id="adminSignatureMeta"></div></div>
-    <div class="contract-dialog-actions"><button class="btn ghost" id="downloadContract">⬇ Tải bản văn bản</button><button class="btn" id="printContract">🖨 In hợp đồng</button></div>
+    <div class="contract-dialog-actions"><button class="btn ghost" id="downloadContract">⬇ Tải Word (.doc)</button><button class="btn" id="printContract">🖨 In hợp đồng</button></div>
   </div>
 </dialog>
 
 <script src="js/data.js"></script>
+<script src="js/contract-doc.js"></script>
 <script>
 (function () {
   "use strict";
@@ -476,7 +477,7 @@
   let ORDERS = [], CONTRACTS = [], LEADS = [], USERS = [], VEHICLES = [], DRIVERS = [];
   let CARS = [], FAQ_ITEMS = [], REVIEW_ITEMS = [], SITE_CONFIG = null;
   let orderFilter = "all", contractFilter = "all", leadFilter = "all", vehicleFilter = "all";
-  let currentAdminContract = { code: "", content: "", signature: "", signerName: "" };
+  let currentAdminContract = { code: "", content: "", signature: "", signerName: "", signedAt: "", contentHash: "" };
   let editingVehicleId = null;
   let editingFleetId = null, editingFaqId = null, editingReviewId = null;
 
@@ -790,7 +791,7 @@
     $("#adminContractMeta").textContent = code;
     $("#adminContractContent").textContent = "Đang tải nội dung hợp đồng...";
     $("#adminSignature").style.display = "none";
-    currentAdminContract = { code, content: "", signature: "", signerName: "" };
+    currentAdminContract = { code, content: "", signature: "", signerName: "", signedAt: "", contentHash: "" };
     dlg.showModal();
     const r = await api("/api/contract?code=" + encodeURIComponent(code), "GET");
     if (!r.ok) {
@@ -800,6 +801,8 @@
     currentAdminContract.content = r.data.content || "";
     currentAdminContract.signature = r.data.signatureImage || "";
     currentAdminContract.signerName = r.data.signerName || "";
+    currentAdminContract.signedAt = r.data.signedAt || "";
+    currentAdminContract.contentHash = r.data.contentHash || "";
     $("#adminContractMeta").textContent = code + (r.data.signed ? " · Đã ký lúc " + fmtTime(r.data.signedAt) : " · Bản nháp chưa ký");
     $("#adminContractContent").textContent = currentAdminContract.content;
     if (r.data.signatureImage) {
@@ -1525,17 +1528,13 @@
   $("#closeContractDialog").addEventListener("click", () => $("#adminContractDialog").close());
   $("#downloadContract").addEventListener("click", () => {
     if (!currentAdminContract.content) return;
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([currentAdminContract.content], { type: "text/plain;charset=utf-8" }));
-    a.download = "hop-dong-" + currentAdminContract.code + ".txt";
-    a.click(); URL.revokeObjectURL(a.href);
+    TXDContractDoc.download(currentAdminContract);
   });
   $("#printContract").addEventListener("click", () => {
     if (!currentAdminContract.content) return;
     const w = window.open("", "_blank");
     if (!w) return alert("Trình duyệt đang chặn cửa sổ in. Vui lòng cho phép cửa sổ bật lên.");
-    const sig = currentAdminContract.signature ? `<div class="sig"><b>BÊN B - NGƯỜI THUÊ</b><img src="${currentAdminContract.signature}"><span>${esc(currentAdminContract.signerName)}</span></div>` : "";
-    w.document.write(`<title>Hợp đồng ${esc(currentAdminContract.code)}</title><style>@page{size:A4;margin:20mm 18mm 20mm 25mm}body{font-family:"Times New Roman",serif;max-width:800px;margin:0 auto;line-height:1.55;font-size:14px}pre{white-space:pre-wrap;font:inherit}.sig{margin:24px 0 0 55%;text-align:center}.sig b,.sig span{display:block}.sig img{width:240px;height:100px;object-fit:contain}</style><pre>${esc(currentAdminContract.content)}</pre>${sig}`);
+    w.document.write(TXDContractDoc.build(currentAdminContract));
     w.document.close(); w.focus(); w.print();
   });
   $("#leadSearch").addEventListener("input", renderLeads);
