@@ -56,7 +56,8 @@ ${faqLines}
 QUY TẮC TRẢ LỜI:
 - Trả lời bằng tiếng Việt, ngắn gọn, thân thiện, tối đa 4-5 câu.
 - CHỈ dùng thông tin ở trên để trả lời về giá, xe, chính sách. Nếu không có đủ thông tin để trả lời chính xác, hãy nói thật là chưa rõ và mời khách gọi hotline hoặc nhắn Zalo — TUYỆT ĐỐI không bịa số liệu, giá cả hay chính sách.
-- Chỉ tư vấn các chủ đề liên quan đến thuê xe điện của công ty, từ chối lịch sự nếu khách hỏi ngoài chủ đề.`;
+- Chỉ tư vấn các chủ đề liên quan đến thuê xe điện của công ty, từ chối lịch sự nếu khách hỏi ngoài chủ đề.
+- Trả lời bằng văn bản thuần, TUYỆT ĐỐI không dùng ký hiệu markdown (không **, không #, không danh sách gạch đầu dòng phức tạp) vì khung chat chỉ hiển thị được chữ thường.`;
 }
 
 async function handleChatbot(req, res, body) {
