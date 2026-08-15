@@ -86,9 +86,13 @@ header.site{
 
 /* ---------- Hero ---------- */
 .hero{
-  position:relative;overflow:hidden;padding:64px 0 0;
-  background:linear-gradient(180deg,#eafff4 0%,#f6fdf9 55%,var(--paper) 100%);
+  position:relative;overflow:hidden;padding:72px 0 0;
+  background:
+    radial-gradient(circle at 83% 18%,rgba(34,211,238,.16),transparent 28%),
+    radial-gradient(circle at 72% 48%,rgba(16,185,129,.18),transparent 34%),
+    linear-gradient(135deg,#f1fff9 0%,#f8fffc 48%,#effbff 100%);
 }
+.hero::before{content:"";position:absolute;inset:0;opacity:.24;pointer-events:none;background-image:linear-gradient(rgba(10,143,94,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(10,143,94,.12) 1px,transparent 1px);background-size:46px 46px;mask-image:linear-gradient(to bottom,#000,transparent 78%)}
 .hero>.container{position:relative;z-index:1}
 .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:32px;align-items:center}
 .hero-top{max-width:600px}
@@ -97,8 +101,10 @@ header.site{
   border:1px solid rgba(16,185,129,.3);color:var(--green-dd);font-size:13.5px;font-weight:600;
   padding:7px 16px;border-radius:100px;margin-bottom:22px;
 }
+.live-dot{width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 0 5px rgba(16,185,129,.13);animation:livePulse 2s ease-out infinite}
 .hero h1{font-size:46px;line-height:1.16;font-weight:800;letter-spacing:-.8px;color:var(--ink)}
 .hero h1 .hl{color:var(--green-d)}
+.hero-gradient-text{background:linear-gradient(90deg,#058257,#00a7c7);-webkit-background-clip:text;background-clip:text;color:transparent!important}
 .page-hero h1 .hl{color:var(--green-d)}
 .hero .lead{margin:20px 0 28px;font-size:17px;color:var(--mut);max-width:520px}
 .hero-cta{display:flex;gap:14px;flex-wrap:wrap}
@@ -106,12 +112,21 @@ header.site{
 .stat b{display:block;font-size:28px;font-weight:800;color:var(--ink)}
 .stat span{font-size:13.5px;color:var(--mut)}
 
-.hero-car-wrap{position:relative;display:flex;justify-content:center;align-items:flex-end;min-height:280px}
-.hero-car-wrap::before{
-  content:"";position:absolute;width:380px;height:380px;border-radius:50%;
-  background:radial-gradient(circle,rgba(16,185,129,.16),transparent 70%);
-}
-.hero-car{position:relative;width:100%;max-width:480px;filter:drop-shadow(0 30px 30px rgba(15,23,42,.18))}
+.hero-tech{position:relative;min-height:430px;display:grid;place-items:center;isolation:isolate}
+.tech-orbit{position:absolute;border:1px solid rgba(16,185,129,.2);border-radius:50%;animation:orbitSpin 18s linear infinite}
+.tech-orbit::after{content:"";position:absolute;width:10px;height:10px;border-radius:50%;background:#22d3ee;box-shadow:0 0 18px #22d3ee;top:12%;left:16%}
+.orbit-one{width:410px;height:410px}.orbit-two{width:330px;height:330px;animation-direction:reverse;animation-duration:13s;border-style:dashed}
+.ai-panel{position:relative;width:min(100%,410px);padding:20px;border:1px solid rgba(255,255,255,.9);border-radius:26px;background:linear-gradient(145deg,rgba(8,28,45,.97),rgba(6,75,68,.94));color:#fff;box-shadow:0 36px 80px rgba(5,55,58,.25),inset 0 1px 0 rgba(255,255,255,.18);overflow:hidden;transform:perspective(900px) rotateY(-5deg) rotateX(2deg)}
+.ai-panel::before{content:"";position:absolute;width:180px;height:180px;border-radius:50%;background:#10b981;filter:blur(90px);opacity:.27;right:-30px;top:-60px}
+.ai-panel-head,.ai-brand,.ai-route,.ai-insights{display:flex;align-items:center}.ai-panel-head{justify-content:space-between;position:relative}.ai-brand{gap:11px}.ai-brand small,.route-copy small,.floating-chip small{display:block;font-size:9px;letter-spacing:1.5px;color:#7dd3c2}.ai-brand b{display:block;font-size:17px}.ai-spark{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;font-size:21px;color:#d1fae5;background:linear-gradient(135deg,rgba(16,185,129,.3),rgba(34,211,238,.2));border:1px solid rgba(110,231,183,.25)}
+.ai-online{font-size:10px;color:#a7f3d0;background:rgba(16,185,129,.12);border:1px solid rgba(110,231,183,.2);padding:6px 9px;border-radius:100px}.ai-online i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#34d399;margin-right:4px}
+.ai-route{justify-content:space-between;margin-top:24px}.route-copy b{display:block;margin-top:2px;font-size:17px}.route-copy b span{color:#5eead4;margin:0 5px}.route-time{padding:7px 10px;background:rgba(255,255,255,.08);border-radius:9px;font-size:12px;color:#ccfbf1}
+.ai-map{position:relative;height:145px;margin:15px 0;border-radius:17px;overflow:hidden;background:linear-gradient(145deg,rgba(15,118,110,.2),rgba(3,19,31,.55));border:1px solid rgba(255,255,255,.08)}
+.map-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(94,234,212,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(94,234,212,.08) 1px,transparent 1px);background-size:24px 24px;transform:rotate(-8deg) scale(1.2)}
+.route-line{position:absolute;width:245px;height:80px;left:55px;top:34px;border:2px solid #5eead4;border-left-color:transparent;border-bottom-color:transparent;border-radius:50%;transform:rotate(-7deg);filter:drop-shadow(0 0 5px rgba(94,234,212,.8))}.route-point{position:absolute;width:12px;height:12px;border:3px solid #fff;border-radius:50%;background:#10b981;box-shadow:0 0 0 7px rgba(16,185,129,.14)}.point-a{left:50px;bottom:30px}.point-b{right:44px;top:28px;background:#22d3ee}.energy-pulse{position:absolute;left:49%;top:47%;width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 0 rgba(94,234,212,.7);animation:mapPulse 2s infinite}
+.ai-insights{gap:10px}.ai-insights>div{flex:1;display:grid;grid-template-columns:32px 1fr;column-gap:8px;padding:11px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:13px}.ai-insights>div>span{grid-row:1/3;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:rgba(16,185,129,.16);color:#6ee7b7}.ai-insights small{font-size:9px;color:#94a3b8}.ai-insights b{font-size:11px;color:#ecfdf5}
+.floating-chip{position:absolute;z-index:2;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;background:rgba(255,255,255,.92);border:1px solid rgba(255,255,255,.9);box-shadow:0 18px 42px rgba(15,23,42,.13);backdrop-filter:blur(12px);animation:chipFloat 4s ease-in-out infinite}.floating-chip>span{width:31px;height:31px;display:grid;place-items:center;border-radius:9px;background:#d1fae5;color:#058257}.floating-chip b{display:block;font-size:11px;color:var(--ink)}.floating-chip small{color:#0a8f5e}.chip-smart{top:28px;right:-8px}.chip-clean{bottom:28px;left:-14px;animation-delay:-2s}
+@keyframes livePulse{70%{box-shadow:0 0 0 9px rgba(16,185,129,0)}}@keyframes orbitSpin{to{transform:rotate(360deg)}}@keyframes mapPulse{70%{box-shadow:0 0 0 16px rgba(94,234,212,0)}}@keyframes chipFloat{50%{transform:translateY(-8px)}}
 
 /* Hộp đặt xe nhanh — 3 tab kiểu Mioto */
 .quickbook-h{
@@ -527,8 +542,8 @@ footer{background:var(--navy);color:#aab4b0;padding:56px 0 0;font-size:14px}
 @media (max-width:992px){
   .hero h1{font-size:38px}
   .hero-grid{grid-template-columns:1fr}
-  .hero-car-wrap{min-height:auto;margin-top:8px}
-  .hero-car{max-width:280px}
+  .hero-top{max-width:720px}
+  .hero-tech{width:min(100%,560px);margin:8px auto 0}
   .usp-grid{grid-template-columns:repeat(2,1fr)}
   .services-grid,.steps,.fleet-grid,.promo-grid{grid-template-columns:repeat(2,1fr)}
   .svc-feature{grid-template-columns:1fr;gap:24px}
@@ -545,7 +560,11 @@ footer{background:var(--navy);color:#aab4b0;padding:56px 0 0;font-size:14px}
   section{padding:60px 0}
   .hero{padding:52px 0 64px}
   .hero h1{font-size:31px}
-  .hero-car{max-width:200px}
+  .hero-tech{min-height:390px;margin-top:4px}
+  .ai-panel{width:94%;padding:16px;transform:none}
+  .orbit-one{width:330px;height:330px}.orbit-two{width:270px;height:270px}
+  .floating-chip{padding:8px 10px}.chip-smart{right:0;top:10px}.chip-clean{left:0;bottom:10px}
+  .ai-online{display:none}.ai-map{height:125px}.ai-insights>div{padding:9px}.ai-insights b{font-size:10px}
   .quickbook-h{padding:18px 18px 16px}
   .qbh-row{flex-direction:column;align-items:stretch}
   .qbh-row .field-row{flex-direction:column}
@@ -563,6 +582,7 @@ footer{background:var(--navy);color:#aab4b0;padding:56px 0 0;font-size:14px}
   .quickbook{padding:22px}
   .modal-body,.modal-head{padding-left:20px;padding-right:20px}
 }
+@media (prefers-reduced-motion:reduce){.live-dot,.tech-orbit,.energy-pulse,.floating-chip{animation:none}}
 
 /* ============================================================
    TRANG CON — xe-cu, phu-kien, tai-khoan, co-tai-xe
