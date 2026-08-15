@@ -281,6 +281,7 @@
         <input type="checkbox" id="ctAgree">
         <span>Tôi đã đọc, hiểu rõ và đồng ý với toàn bộ nội dung hợp đồng trên.</span>
       </label>
+      <button class="btn btn-outline btn-block" id="ctDownload" style="margin-bottom:10px" disabled>⬇ Tải hợp đồng</button>
       <button class="btn btn-primary btn-block" id="ctSubmit" disabled>Xác nhận ký hợp đồng</button>
     </div>
   </div>
@@ -327,7 +328,7 @@
   function contractHTML(o, isLocal) {
     if (isLocal) return "";
     if (o.contractSignedAt) {
-      return `<div class="ct-box ct-signed">✅ Đã ký hợp đồng lúc ${fmtTime(o.contractSignedAt)}</div>`;
+      return `<div class="ct-box ct-signed">✅ Đã ký hợp đồng lúc ${fmtTime(o.contractSignedAt)}<br><button class="btn btn-outline btn-sm" data-contract="${o.code}" style="margin-top:9px">📄 Xem lại hợp đồng</button></div>`;
     }
     if (VERIFY && VERIFY.verifyStatus === "verified" && legalComplete()) {
       return `<div class="ct-box"><button class="btn btn-outline btn-sm" data-contract="${o.code}">📄 Ký hợp đồng điện tử</button></div>`;
@@ -582,16 +583,18 @@
   });
 
   // ---------- Ký hợp đồng điện tử ----------
-  let currentContractCode = "";
+  let currentContractCode = "", currentContractContent = "";
 
   async function openContract(code) {
     currentContractCode = code;
+    currentContractContent = "";
     $("#ctMeta").textContent = code;
     $("#ctContent").textContent = "Đang tải nội dung hợp đồng...";
     $("#ctAgree").checked = false;
     $("#ctAgree").disabled = false;
     $("#ctAgreeRow").style.display = "";
     $("#ctSubmit").disabled = true;
+    $("#ctDownload").disabled = true;
     $("#ctSubmit").textContent = "Xác nhận ký hợp đồng";
     TXDPage.openModal("#contractModal");
 
@@ -600,6 +603,8 @@
       const data = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(data.error || "Không tải được hợp đồng");
       $("#ctContent").textContent = data.content;
+      currentContractContent = data.content || "";
+      $("#ctDownload").disabled = !currentContractContent;
       if (data.signed) {
         $("#ctAgreeRow").style.display = "none";
         $("#ctSubmit").disabled = true;
@@ -612,6 +617,14 @@
 
   $("#ctAgree").addEventListener("change", () => {
     $("#ctSubmit").disabled = !$("#ctAgree").checked;
+  });
+
+  $("#ctDownload").addEventListener("click", () => {
+    if (!currentContractContent) return;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([currentContractContent], { type: "text/plain;charset=utf-8" }));
+    a.download = "hop-dong-" + currentContractCode + ".txt";
+    a.click(); URL.revokeObjectURL(a.href);
   });
 
   $("#ctSubmit").addEventListener("click", async () => {

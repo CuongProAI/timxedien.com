@@ -98,6 +98,52 @@ function legalComplete(user) {
 }
 
 module.exports = async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || (req.query && req.query.key) || '';
+  const isAdmin = !!process.env.ADMIN_KEY && adminKey === process.env.ADMIN_KEY;
+
+  // Admin: xem danh sách hợp đồng của toàn bộ đơn và mở bản đã ký/bản nháp.
+  if (req.method === 'GET' && isAdmin) {
+    try {
+      const requestedCode = String(((req.query || {}).code) || '').toUpperCase();
+      const { data: orders, error: oErr } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+      if (oErr) throw oErr;
+      const codes = (orders || []).map((o) => o.code);
+      const { data: signedRows, error: cErr } = codes.length
+        ? await supabase.from('contracts').select('*').in('order_code', codes).order('signed_at', { ascending: false })
+        : { data: [], error: null };
+      if (cErr) throw cErr;
+      const latest = {};
+      (signedRows || []).forEach((c) => { if (!latest[c.order_code]) latest[c.order_code] = c; });
+
+      if (requestedCode) {
+        if (!/^TXD-[A-Z0-9]{4,10}$/.test(requestedCode)) return res.status(400).json({ error: 'Mã đơn không hợp lệ' });
+        const order = (orders || []).find((o) => o.code === requestedCode);
+        if (!order) return res.status(404).json({ error: 'Không tìm thấy đơn' });
+        const contract = latest[requestedCode];
+        if (contract) return res.status(200).json({ ok: true, signed: true, signedAt: contract.signed_at, content: contract.content });
+        const phone = phoneKey(order.user_phone || order.phone);
+        const { data: user, error: uErr } = await supabase.from('users').select('*').eq('phone', phone).maybeSingle();
+        if (uErr) throw uErr;
+        if (!user) return res.status(404).json({ error: 'Khách chưa có tài khoản để lập hợp đồng' });
+        return res.status(200).json({ ok: true, signed: false, signedAt: null, content: buildContract(order, user) });
+      }
+
+      const contracts = (orders || []).map((o) => {
+        const c = latest[o.code];
+        return {
+          code: o.code, customer: o.name, phone: o.phone, car: o.car,
+          time: o.time_range, total: Number(o.total) || 0, orderStatus: o.status,
+          orderCreatedAt: o.created_at, signed: !!c, signedAt: c ? c.signed_at : null,
+          hasAccount: !!o.user_phone
+        };
+      });
+      return res.status(200).json({ ok: true, contracts });
+    } catch (e) {
+      console.error('admin contract error', e);
+      return res.status(500).json({ error: 'Không tải được danh sách hợp đồng.' });
+    }
+  }
+
   const auth = verifyToken((req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
   if (!auth) return res.status(401).json({ error: 'Cần đăng nhập' });
   const phone = phoneKey(auth.p);

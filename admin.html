@@ -107,8 +107,11 @@
   .secondary-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px}.metric{padding:16px;border:1px solid var(--line);border-radius:14px;background:#fff}.metric small{display:block;color:var(--mut);font-size:11px}.metric b{display:block;color:var(--ink);font-size:20px;margin-top:3px}.metric em{font-style:normal;font-size:11px;color:var(--green-d)}
   .work-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.work-grid h2{font-size:16px;margin:0 0 11px}.mini-list .card{border:0;box-shadow:0 6px 22px rgba(9,30,42,.05)}
   .guide.compact{margin-top:22px}.guide.compact summary{cursor:pointer;font-weight:700;color:var(--ink)}.guide.compact ol{margin-top:14px}
+  .contract-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}.contract-summary .metric{box-shadow:0 6px 22px rgba(9,30,42,.05)}
+  .contract-card{display:grid;grid-template-columns:minmax(220px,1.2fr) minmax(180px,1fr) auto;gap:18px;align-items:center}.contract-main .code{display:block;margin-bottom:4px}.contract-main strong{color:var(--ink)}.contract-meta{font-size:12.5px;color:var(--mut)}
+  dialog.contract-dialog{width:min(850px,calc(100% - 28px));max-height:90vh;margin:auto;border:0;border-radius:20px;padding:0;box-shadow:0 30px 100px rgba(5,20,31,.35)}dialog.contract-dialog::backdrop{background:rgba(3,13,21,.65);backdrop-filter:blur(4px)}.contract-dialog-head{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:18px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;z-index:1}.contract-dialog-head h3{color:var(--ink);font-size:17px}.contract-dialog-body{padding:22px}.contract-doc{white-space:pre-wrap;background:#f8faf9;border:1px solid var(--line);border-radius:14px;padding:24px;font-family:Georgia,"Times New Roman",serif;font-size:14px;line-height:1.7;max-height:62vh;overflow:auto;color:#263b35}.contract-dialog-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
   @media(max-width:1180px){.stats{grid-template-columns:repeat(3,1fr)}.analytics-grid{grid-template-columns:1fr}.secondary-stats{grid-template-columns:repeat(3,1fr)}}
-  @media(max-width:860px){#app .topbar{position:sticky;width:auto;height:auto;inset:auto;top:0}#app .topbar .inner{height:auto;padding:11px 14px;display:flex;flex-direction:row;align-items:center;gap:10px}#app .brand{border:0;padding:0;white-space:nowrap}#app .brand small,.tabs .nav-label{display:none!important}#app .tabs{flex-direction:row;overflow-x:auto;margin-left:auto}#app .tabs button{width:auto;white-space:nowrap;padding:8px 11px}#app .tabs button.exit{margin:0;border:0;padding:8px 11px}#app .wrap{margin:0;padding:20px 16px 50px}.dash-head{align-items:flex-start}.dash-date{display:none}.stats{grid-template-columns:repeat(2,1fr)}.work-grid{grid-template-columns:1fr}}
+  @media(max-width:860px){#app .topbar{position:sticky;width:auto;height:auto;inset:auto;top:0}#app .topbar .inner{height:auto;padding:11px 14px;display:flex;flex-direction:row;align-items:center;gap:10px}#app .brand{border:0;padding:0;white-space:nowrap}#app .brand small,.tabs .nav-label{display:none!important}#app .tabs{flex-direction:row;overflow-x:auto;margin-left:auto}#app .tabs button{width:auto;white-space:nowrap;padding:8px 11px}#app .tabs button.exit{margin:0;border:0;padding:8px 11px}#app .wrap{margin:0;padding:20px 16px 50px}.dash-head{align-items:flex-start}.dash-date{display:none}.stats{grid-template-columns:repeat(2,1fr)}.work-grid{grid-template-columns:1fr}.contract-card{grid-template-columns:1fr}.contract-summary{grid-template-columns:1fr 1fr}}
   @media(max-width:560px){#app .brand{font-size:0}#app .brand::before{content:"⚡";font-size:20px}.dash-head{display:block}.dash-actions{margin-top:12px}.stats{grid-template-columns:1fr 1fr}.stat{padding:14px}.stat b{font-size:21px}.secondary-stats{grid-template-columns:1fr}.status-row{grid-template-columns:90px 1fr 24px}.bar-chart{gap:4px}.bar-value{display:none}}
 </style>
 </head>
@@ -132,6 +135,7 @@
         <div class="nav-label">Điều hành</div>
         <button data-tab="dash" class="active">📊 Tổng quan</button>
         <button data-tab="orders">🚗 Đơn thuê xe <span id="badgeOrders"></span></button>
+        <button data-tab="contracts">📄 Hợp đồng thuê <span id="badgeContracts"></span></button>
         <button data-tab="leads">💬 Tư vấn <span id="badgeLeads"></span></button>
         <button data-tab="users">👥 Khách hàng</button>
         <button data-tab="vehicles">🚙 Kho xe</button>
@@ -199,6 +203,22 @@
         <input class="inp" id="orderSearch" placeholder="Tìm theo tên, SĐT, mã đơn, xe...">
       </div>
       <div id="orderList"><div class="empty">Đang tải...</div></div>
+    </div>
+
+    <!-- ===== TAB: Hợp đồng thuê ===== -->
+    <div id="tab-contracts" style="display:none">
+      <div class="bar" style="justify-content:space-between">
+        <div><h2 style="margin:0">Quản lý hợp đồng thuê</h2><div class="meta">Theo dõi bản nháp, hợp đồng đã ký và mở lại nội dung theo từng đơn.</div></div>
+        <button class="btn ghost" id="reloadContracts">↻ Tải lại</button>
+      </div>
+      <div class="contract-summary" id="contractStats"></div>
+      <div class="bar" id="contractChips">
+        <button class="chip active" data-cf="all">Tất cả</button>
+        <button class="chip" data-cf="signed">Đã ký</button>
+        <button class="chip" data-cf="pending">Chưa ký</button>
+      </div>
+      <div class="bar"><input class="inp" id="contractSearch" placeholder="Tìm mã đơn, khách hàng, SĐT hoặc xe..." style="min-width:min(100%,420px)"></div>
+      <div id="contractList"><div class="empty">Đang tải...</div></div>
     </div>
 
     <!-- ===== TAB: Tư vấn ===== -->
@@ -426,6 +446,14 @@
   </div>
 </div>
 
+<dialog class="contract-dialog" id="adminContractDialog">
+  <div class="contract-dialog-head"><div><h3>Hợp đồng thuê xe</h3><div class="meta" id="adminContractMeta"></div></div><button class="btn ghost sm" id="closeContractDialog">✕ Đóng</button></div>
+  <div class="contract-dialog-body">
+    <div class="contract-doc" id="adminContractContent">Đang tải...</div>
+    <div class="contract-dialog-actions"><button class="btn ghost" id="downloadContract">⬇ Tải bản văn bản</button><button class="btn" id="printContract">🖨 In hợp đồng</button></div>
+  </div>
+</dialog>
+
 <script src="js/data.js"></script>
 <script>
 (function () {
@@ -444,9 +472,10 @@
   };
 
   let KEY = sessionStorage.getItem("txd_admin_key") || "";
-  let ORDERS = [], LEADS = [], USERS = [], VEHICLES = [], DRIVERS = [];
+  let ORDERS = [], CONTRACTS = [], LEADS = [], USERS = [], VEHICLES = [], DRIVERS = [];
   let CARS = [], FAQ_ITEMS = [], REVIEW_ITEMS = [], SITE_CONFIG = null;
-  let orderFilter = "all", leadFilter = "all", vehicleFilter = "all";
+  let orderFilter = "all", contractFilter = "all", leadFilter = "all", vehicleFilter = "all";
+  let currentAdminContract = { code: "", content: "" };
   let editingVehicleId = null;
   let editingFleetId = null, editingFaqId = null, editingReviewId = null;
 
@@ -470,8 +499,9 @@
   async function loadAll(silent) {
     if (!silent) banner("");
     try {
-      const [o, l, u, v, d, fl, fq, rv, cf] = await Promise.all([
+      const [o, ct, l, u, v, d, fl, fq, rv, cf] = await Promise.all([
         api("/api/orders", "GET"),
+        api("/api/contract", "GET"),
         api("/api/leads", "GET"),
         api("/api/users", "GET"),
         api("/api/vehicles", "GET"),
@@ -487,6 +517,7 @@
         return false;
       }
       ORDERS = (o.data && o.data.orders) || [];
+      CONTRACTS = (ct.data && ct.data.contracts) || [];
       LEADS = (l.data && l.data.leads) || [];
       USERS = (u.data && u.data.users) || [];
       VEHICLES = (v.data && v.data.vehicles) || [];
@@ -507,6 +538,7 @@
   function renderAll() {
     renderDash();
     renderOrders();
+    renderContracts();
     renderLeads();
     renderUsers();
     renderVehicles();
@@ -518,6 +550,8 @@
     const newOrders = ORDERS.filter((x) => x.status === "new").length;
     const newLeads = LEADS.filter((x) => x.status === "new").length;
     $("#badgeOrders").textContent = newOrders ? `(${newOrders})` : "";
+    const pendingContracts = CONTRACTS.filter((x) => !x.signed && x.hasAccount).length;
+    $("#badgeContracts").textContent = pendingContracts ? `(${pendingContracts})` : "";
     $("#badgeLeads").textContent = newLeads ? `(${newLeads})` : "";
   }
 
@@ -723,6 +757,49 @@
   }
 
   // ================= TƯ VẤN =================
+  // ================= HỢP ĐỒNG THUÊ =================
+  function renderContracts() {
+    const signed = CONTRACTS.filter((c) => c.signed).length;
+    const pending = CONTRACTS.length - signed;
+    const signedValue = CONTRACTS.filter((c) => c.signed).reduce((s, c) => s + (Number(c.total) || 0), 0);
+    $("#contractStats").innerHTML = `
+      <div class="metric"><small>Tổng hồ sơ hợp đồng</small><b>${CONTRACTS.length}</b><em>Gắn theo đơn thuê xe</em></div>
+      <div class="metric"><small>Đã ký điện tử</small><b>${signed}</b><em>${CONTRACTS.length ? Math.round(signed / CONTRACTS.length * 100) : 0}% tổng số hợp đồng</em></div>
+      <div class="metric"><small>Giá trị hợp đồng đã ký</small><b>${fmt(signedValue)}</b><em>${pending} hợp đồng đang chờ ký</em></div>`;
+
+    const q = ($("#contractSearch").value || "").toLowerCase();
+    const items = CONTRACTS.filter((c) => {
+      if (contractFilter === "signed" && !c.signed) return false;
+      if (contractFilter === "pending" && c.signed) return false;
+      return !q || (c.code + " " + c.customer + " " + c.phone + " " + c.car).toLowerCase().includes(q);
+    });
+    $("#contractList").innerHTML = items.map((c) => {
+      const orderSt = ORDER_STATUS[c.orderStatus] || { label: c.orderStatus || "-", color: "#64748b" };
+      return `<div class="card contract-card">
+        <div class="contract-main"><span class="code">${esc(c.code)}</span><strong>${esc(c.customer)}</strong> · <a href="tel:${esc(c.phone)}">${esc(c.phone)}</a><div class="contract-meta">${esc(c.car)} · ${esc(c.time || "Chưa xác định thời gian")}</div></div>
+        <div><span class="pill" style="background:${c.signed ? "#0a8f5e" : "#b7791f"}">${c.signed ? "✓ ĐÃ KÝ" : "● CHƯA KÝ"}</span><div class="contract-meta" style="margin-top:7px">${c.signed ? "Ký lúc " + fmtTime(c.signedAt) : (c.hasAccount ? "Khách có thể ký trong tài khoản" : "Khách chưa liên kết tài khoản")}</div><div class="contract-meta">Đơn: <span style="color:${orderSt.color}">${esc(orderSt.label)}</span> · ${fmt(c.total)}</div></div>
+        <div class="acts" style="margin:0"><button class="btn sm ghost" data-view-contract="${esc(c.code)}" ${!c.signed && !c.hasAccount ? "disabled" : ""}>📄 ${c.signed ? "Xem hợp đồng" : "Xem bản nháp"}</button></div>
+      </div>`;
+    }).join("") || `<div class="empty">Không có hợp đồng nào khớp bộ lọc.</div>`;
+    $$("#contractList [data-view-contract]").forEach((b) => b.addEventListener("click", () => openAdminContract(b.dataset.viewContract)));
+  }
+
+  async function openAdminContract(code) {
+    const dlg = $("#adminContractDialog");
+    $("#adminContractMeta").textContent = code;
+    $("#adminContractContent").textContent = "Đang tải nội dung hợp đồng...";
+    currentAdminContract = { code, content: "" };
+    dlg.showModal();
+    const r = await api("/api/contract?code=" + encodeURIComponent(code), "GET");
+    if (!r.ok) {
+      $("#adminContractContent").textContent = "Không tải được hợp đồng: " + (r.data.error || "Vui lòng thử lại.");
+      return;
+    }
+    currentAdminContract.content = r.data.content || "";
+    $("#adminContractMeta").textContent = code + (r.data.signed ? " · Đã ký lúc " + fmtTime(r.data.signedAt) : " · Bản nháp chưa ký");
+    $("#adminContractContent").textContent = currentAdminContract.content;
+  }
+
   function renderLeadChips() {
     const counts = { all: LEADS.length };
     Object.keys(LEAD_ST).forEach((k) => { counts[k] = LEADS.filter((l) => l.status === k).length; });
@@ -1384,7 +1461,7 @@
 
   // ================= TAB & ĐĂNG NHẬP =================
   function showTab(name) {
-    ["dash", "orders", "leads", "users", "vehicles", "drivers", "fleet", "faqs", "reviews", "siteconfig"].forEach((t) => { $("#tab-" + t).style.display = t === name ? "" : "none"; });
+    ["dash", "orders", "contracts", "leads", "users", "vehicles", "drivers", "fleet", "faqs", "reviews", "siteconfig"].forEach((t) => { $("#tab-" + t).style.display = t === name ? "" : "none"; });
     $$("#tabs [data-tab]").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
   }
   $$("#tabs [data-tab]").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
@@ -1426,10 +1503,31 @@
     showLogin("");
   });
 
-  ["#reloadAll", "#reloadOrders", "#reloadLeads", "#reloadUsers", "#reloadVehicles", "#reloadDrivers"].forEach((id) =>
+  ["#reloadAll", "#reloadOrders", "#reloadContracts", "#reloadLeads", "#reloadUsers", "#reloadVehicles", "#reloadDrivers"].forEach((id) =>
     $(id).addEventListener("click", () => loadAll())
   );
   $("#orderSearch").addEventListener("input", renderOrders);
+  $("#contractSearch").addEventListener("input", renderContracts);
+  $$("#contractChips [data-cf]").forEach((b) => b.addEventListener("click", () => {
+    contractFilter = b.dataset.cf;
+    $$("#contractChips [data-cf]").forEach((x) => x.classList.toggle("active", x === b));
+    renderContracts();
+  }));
+  $("#closeContractDialog").addEventListener("click", () => $("#adminContractDialog").close());
+  $("#downloadContract").addEventListener("click", () => {
+    if (!currentAdminContract.content) return;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([currentAdminContract.content], { type: "text/plain;charset=utf-8" }));
+    a.download = "hop-dong-" + currentAdminContract.code + ".txt";
+    a.click(); URL.revokeObjectURL(a.href);
+  });
+  $("#printContract").addEventListener("click", () => {
+    if (!currentAdminContract.content) return;
+    const w = window.open("", "_blank");
+    if (!w) return alert("Trình duyệt đang chặn cửa sổ in. Vui lòng cho phép cửa sổ bật lên.");
+    w.document.write(`<title>Hợp đồng ${esc(currentAdminContract.code)}</title><style>body{font-family:Georgia,serif;max-width:800px;margin:40px auto;line-height:1.65;padding:0 20px}pre{white-space:pre-wrap;font:inherit}</style><pre>${esc(currentAdminContract.content)}</pre>`);
+    w.document.close(); w.focus(); w.print();
+  });
   $("#leadSearch").addEventListener("input", renderLeads);
   $("#userSearch").addEventListener("input", renderUsers);
 
