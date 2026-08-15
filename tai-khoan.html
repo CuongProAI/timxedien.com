@@ -277,6 +277,13 @@
     </div>
     <div class="modal-body">
       <div class="contract-text" id="ctContent">Đang tải...</div>
+      <div class="signature-box" id="ctSignatureBox">
+        <div class="signature-head"><b>Chữ ký Bên B — Người thuê</b><span>Dùng ngón tay hoặc chuột để ký</span></div>
+        <canvas class="signature-canvas" id="ctSignatureCanvas" aria-label="Ô ký tên điện tử"></canvas>
+        <img class="signature-preview" id="ctSignaturePreview" alt="Chữ ký điện tử của người thuê">
+        <div class="signature-legacy" id="ctSignatureLegacy">Hợp đồng này được ký trước khi tính năng lưu nét ký được bổ sung. Hệ thống vẫn lưu thời điểm, tài khoản và thông tin xác nhận của lần ký trước.</div>
+        <div class="signature-tools" id="ctSignatureTools"><input id="ctSignerName" placeholder="Nhập đầy đủ họ tên người ký"><button class="btn btn-outline btn-sm" id="ctClearSignature" type="button">Xóa nét ký</button></div>
+      </div>
       <label class="ct-agree" id="ctAgreeRow">
         <input type="checkbox" id="ctAgree">
         <span>Tôi đã đọc, hiểu rõ và đồng ý với toàn bộ nội dung hợp đồng trên.</span>
@@ -312,6 +319,7 @@
 
   let VERIFY = null; // { verifyStatus, verifyNote, uploaded } — nạp qua loadVerify()
   let LEGAL = null; // hồ sơ pháp lý đầy đủ (CCCD/GPLX/địa chỉ) — nạp qua loadProfile()
+  let CURRENT_USER = null;
 
   const legalComplete = () => !!(LEGAL && LEGAL.idNumber && LEGAL.licenseNumber && LEGAL.addressPerm);
 
@@ -383,6 +391,7 @@
   }
 
   function showAccount(user) {
+    CURRENT_USER = user;
     $("#authSection").style.display = "none";
     $("#deviceSection").style.display = "none";
     $("#acctSection").style.display = "";
@@ -583,11 +592,51 @@
   });
 
   // ---------- Ký hợp đồng điện tử ----------
-  let currentContractCode = "", currentContractContent = "";
+  let currentContractCode = "", currentContractContent = "", signatureHasInk = false, signatureDrawing = false, contractAlreadySigned = false;
+  const signatureCanvas = $("#ctSignatureCanvas");
+  const signatureCtx = signatureCanvas.getContext("2d");
+
+  function updateContractSubmit() {
+    $("#ctSubmit").disabled = contractAlreadySigned || !$("#ctAgree").checked || !signatureHasInk || !$("#ctSignerName").value.trim();
+  }
+
+  function setupSignaturePad() {
+    const rect = signatureCanvas.getBoundingClientRect();
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    signatureCanvas.width = Math.max(1, Math.round(rect.width * ratio));
+    signatureCanvas.height = Math.max(1, Math.round(rect.height * ratio));
+    signatureCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    signatureCtx.lineWidth = 2.2;
+    signatureCtx.lineCap = "round";
+    signatureCtx.lineJoin = "round";
+    signatureCtx.strokeStyle = "#102a43";
+    signatureCtx.clearRect(0, 0, rect.width, rect.height);
+    signatureHasInk = false;
+    updateContractSubmit();
+  }
+
+  function signaturePoint(e) {
+    const r = signatureCanvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+  signatureCanvas.addEventListener("pointerdown", (e) => {
+    if (contractAlreadySigned) return;
+    signatureDrawing = true; signatureCanvas.setPointerCapture(e.pointerId);
+    const p = signaturePoint(e); signatureCtx.beginPath(); signatureCtx.moveTo(p.x, p.y);
+  });
+  signatureCanvas.addEventListener("pointermove", (e) => {
+    if (!signatureDrawing) return;
+    const p = signaturePoint(e); signatureCtx.lineTo(p.x, p.y); signatureCtx.stroke();
+    signatureHasInk = true; updateContractSubmit();
+  });
+  ["pointerup", "pointercancel", "pointerleave"].forEach((ev) => signatureCanvas.addEventListener(ev, () => { signatureDrawing = false; }));
+  $("#ctClearSignature").addEventListener("click", setupSignaturePad);
+  $("#ctSignerName").addEventListener("input", updateContractSubmit);
 
   async function openContract(code) {
     currentContractCode = code;
     currentContractContent = "";
+    contractAlreadySigned = false;
     $("#ctMeta").textContent = code;
     $("#ctContent").textContent = "Đang tải nội dung hợp đồng...";
     $("#ctAgree").checked = false;
@@ -596,7 +645,13 @@
     $("#ctSubmit").disabled = true;
     $("#ctDownload").disabled = true;
     $("#ctSubmit").textContent = "Xác nhận ký hợp đồng";
+    $("#ctSignerName").value = (CURRENT_USER && CURRENT_USER.name) || "";
+    $("#ctSignatureCanvas").style.display = "block";
+    $("#ctSignatureTools").style.display = "flex";
+    $("#ctSignaturePreview").style.display = "none";
+    $("#ctSignatureLegacy").style.display = "none";
     TXDPage.openModal("#contractModal");
+    requestAnimationFrame(setupSignaturePad);
 
     try {
       const r = await fetch("/api/contract?code=" + encodeURIComponent(code), { headers: TXDAuth.header() });
@@ -605,8 +660,18 @@
       $("#ctContent").textContent = data.content;
       currentContractContent = data.content || "";
       $("#ctDownload").disabled = !currentContractContent;
+      $("#ctSignerName").value = data.signerName || $("#ctSignerName").value;
       if (data.signed) {
+        contractAlreadySigned = true;
         $("#ctAgreeRow").style.display = "none";
+        $("#ctSignatureCanvas").style.display = "none";
+        $("#ctSignatureTools").style.display = "none";
+        if (data.signatureImage) {
+          $("#ctSignaturePreview").src = data.signatureImage;
+          $("#ctSignaturePreview").style.display = "block";
+        } else {
+          $("#ctSignatureLegacy").style.display = "block";
+        }
         $("#ctSubmit").disabled = true;
         $("#ctSubmit").textContent = "Đã ký lúc " + fmtTime(data.signedAt);
       }
@@ -616,7 +681,7 @@
   }
 
   $("#ctAgree").addEventListener("change", () => {
-    $("#ctSubmit").disabled = !$("#ctAgree").checked;
+    updateContractSubmit();
   });
 
   $("#ctDownload").addEventListener("click", () => {
@@ -628,13 +693,13 @@
   });
 
   $("#ctSubmit").addEventListener("click", async () => {
-    if (!currentContractCode || !$("#ctAgree").checked) return;
+    if (!currentContractCode || !$("#ctAgree").checked || !signatureHasInk) return;
     const btn = $("#ctSubmit");
     btn.disabled = true; btn.textContent = "Đang xác nhận...";
     try {
       const r = await fetch("/api/contract", {
         method: "POST", headers: TXDAuth.header(),
-        body: JSON.stringify({ code: currentContractCode })
+        body: JSON.stringify({ code: currentContractCode, consent: true, signerName: $("#ctSignerName").value.trim(), signature: signatureCanvas.toDataURL("image/png") })
       });
       const data = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(data.error || "Ký hợp đồng thất bại");

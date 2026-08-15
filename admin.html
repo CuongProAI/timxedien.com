@@ -109,7 +109,7 @@
   .guide.compact{margin-top:22px}.guide.compact summary{cursor:pointer;font-weight:700;color:var(--ink)}.guide.compact ol{margin-top:14px}
   .contract-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}.contract-summary .metric{box-shadow:0 6px 22px rgba(9,30,42,.05)}
   .contract-card{display:grid;grid-template-columns:minmax(220px,1.2fr) minmax(180px,1fr) auto;gap:18px;align-items:center}.contract-main .code{display:block;margin-bottom:4px}.contract-main strong{color:var(--ink)}.contract-meta{font-size:12.5px;color:var(--mut)}
-  dialog.contract-dialog{width:min(850px,calc(100% - 28px));max-height:90vh;margin:auto;border:0;border-radius:20px;padding:0;box-shadow:0 30px 100px rgba(5,20,31,.35)}dialog.contract-dialog::backdrop{background:rgba(3,13,21,.65);backdrop-filter:blur(4px)}.contract-dialog-head{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:18px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;z-index:1}.contract-dialog-head h3{color:var(--ink);font-size:17px}.contract-dialog-body{padding:22px}.contract-doc{white-space:pre-wrap;background:#f8faf9;border:1px solid var(--line);border-radius:14px;padding:24px;font-family:Georgia,"Times New Roman",serif;font-size:14px;line-height:1.7;max-height:62vh;overflow:auto;color:#263b35}.contract-dialog-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  dialog.contract-dialog{width:min(850px,calc(100% - 28px));max-height:90vh;margin:auto;border:0;border-radius:20px;padding:0;box-shadow:0 30px 100px rgba(5,20,31,.35)}dialog.contract-dialog::backdrop{background:rgba(3,13,21,.65);backdrop-filter:blur(4px)}.contract-dialog-head{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:18px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;z-index:1}.contract-dialog-head h3{color:var(--ink);font-size:17px}.contract-dialog-body{padding:22px}.contract-doc{white-space:pre-wrap;background:#f8faf9;border:1px solid var(--line);border-radius:14px;padding:24px;font-family:Georgia,"Times New Roman",serif;font-size:14px;line-height:1.7;max-height:62vh;overflow:auto;color:#263b35}.admin-signature{display:none;margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:14px;background:#f8faf9}.admin-signature b{display:block;font-size:12px;color:var(--mut);margin-bottom:8px}.admin-signature img{display:block;max-width:360px;width:100%;height:130px;object-fit:contain;background:#fff;border-radius:9px}.contract-dialog-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
   @media(max-width:1180px){.stats{grid-template-columns:repeat(3,1fr)}.analytics-grid{grid-template-columns:1fr}.secondary-stats{grid-template-columns:repeat(3,1fr)}}
   @media(max-width:860px){#app .topbar{position:sticky;width:auto;height:auto;inset:auto;top:0}#app .topbar .inner{height:auto;padding:11px 14px;display:flex;flex-direction:row;align-items:center;gap:10px}#app .brand{border:0;padding:0;white-space:nowrap}#app .brand small,.tabs .nav-label{display:none!important}#app .tabs{flex-direction:row;overflow-x:auto;margin-left:auto}#app .tabs button{width:auto;white-space:nowrap;padding:8px 11px}#app .tabs button.exit{margin:0;border:0;padding:8px 11px}#app .wrap{margin:0;padding:20px 16px 50px}.dash-head{align-items:flex-start}.dash-date{display:none}.stats{grid-template-columns:repeat(2,1fr)}.work-grid{grid-template-columns:1fr}.contract-card{grid-template-columns:1fr}.contract-summary{grid-template-columns:1fr 1fr}}
   @media(max-width:560px){#app .brand{font-size:0}#app .brand::before{content:"⚡";font-size:20px}.dash-head{display:block}.dash-actions{margin-top:12px}.stats{grid-template-columns:1fr 1fr}.stat{padding:14px}.stat b{font-size:21px}.secondary-stats{grid-template-columns:1fr}.status-row{grid-template-columns:90px 1fr 24px}.bar-chart{gap:4px}.bar-value{display:none}}
@@ -450,6 +450,7 @@
   <div class="contract-dialog-head"><div><h3>Hợp đồng thuê xe</h3><div class="meta" id="adminContractMeta"></div></div><button class="btn ghost sm" id="closeContractDialog">✕ Đóng</button></div>
   <div class="contract-dialog-body">
     <div class="contract-doc" id="adminContractContent">Đang tải...</div>
+    <div class="admin-signature" id="adminSignature"><b>CHỮ KÝ ĐIỆN TỬ — BÊN B (NGƯỜI THUÊ)</b><img id="adminSignatureImage" alt="Chữ ký điện tử của người thuê"><div class="meta" id="adminSignatureMeta"></div></div>
     <div class="contract-dialog-actions"><button class="btn ghost" id="downloadContract">⬇ Tải bản văn bản</button><button class="btn" id="printContract">🖨 In hợp đồng</button></div>
   </div>
 </dialog>
@@ -475,7 +476,7 @@
   let ORDERS = [], CONTRACTS = [], LEADS = [], USERS = [], VEHICLES = [], DRIVERS = [];
   let CARS = [], FAQ_ITEMS = [], REVIEW_ITEMS = [], SITE_CONFIG = null;
   let orderFilter = "all", contractFilter = "all", leadFilter = "all", vehicleFilter = "all";
-  let currentAdminContract = { code: "", content: "" };
+  let currentAdminContract = { code: "", content: "", signature: "", signerName: "" };
   let editingVehicleId = null;
   let editingFleetId = null, editingFaqId = null, editingReviewId = null;
 
@@ -788,7 +789,8 @@
     const dlg = $("#adminContractDialog");
     $("#adminContractMeta").textContent = code;
     $("#adminContractContent").textContent = "Đang tải nội dung hợp đồng...";
-    currentAdminContract = { code, content: "" };
+    $("#adminSignature").style.display = "none";
+    currentAdminContract = { code, content: "", signature: "", signerName: "" };
     dlg.showModal();
     const r = await api("/api/contract?code=" + encodeURIComponent(code), "GET");
     if (!r.ok) {
@@ -796,8 +798,15 @@
       return;
     }
     currentAdminContract.content = r.data.content || "";
+    currentAdminContract.signature = r.data.signatureImage || "";
+    currentAdminContract.signerName = r.data.signerName || "";
     $("#adminContractMeta").textContent = code + (r.data.signed ? " · Đã ký lúc " + fmtTime(r.data.signedAt) : " · Bản nháp chưa ký");
     $("#adminContractContent").textContent = currentAdminContract.content;
+    if (r.data.signatureImage) {
+      $("#adminSignatureImage").src = r.data.signatureImage;
+      $("#adminSignatureMeta").textContent = (r.data.signerName || "Người thuê") + (r.data.contentHash ? " · Mã kiểm tra: " + r.data.contentHash.slice(0, 16) : "");
+      $("#adminSignature").style.display = "block";
+    }
   }
 
   function renderLeadChips() {
@@ -1525,7 +1534,8 @@
     if (!currentAdminContract.content) return;
     const w = window.open("", "_blank");
     if (!w) return alert("Trình duyệt đang chặn cửa sổ in. Vui lòng cho phép cửa sổ bật lên.");
-    w.document.write(`<title>Hợp đồng ${esc(currentAdminContract.code)}</title><style>body{font-family:Georgia,serif;max-width:800px;margin:40px auto;line-height:1.65;padding:0 20px}pre{white-space:pre-wrap;font:inherit}</style><pre>${esc(currentAdminContract.content)}</pre>`);
+    const sig = currentAdminContract.signature ? `<div class="sig"><b>BÊN B - NGƯỜI THUÊ</b><img src="${currentAdminContract.signature}"><span>${esc(currentAdminContract.signerName)}</span></div>` : "";
+    w.document.write(`<title>Hợp đồng ${esc(currentAdminContract.code)}</title><style>@page{size:A4;margin:20mm 18mm 20mm 25mm}body{font-family:"Times New Roman",serif;max-width:800px;margin:0 auto;line-height:1.55;font-size:14px}pre{white-space:pre-wrap;font:inherit}.sig{margin:24px 0 0 55%;text-align:center}.sig b,.sig span{display:block}.sig img{width:240px;height:100px;object-fit:contain}</style><pre>${esc(currentAdminContract.content)}</pre>${sig}`);
     w.document.close(); w.focus(); w.print();
   });
   $("#leadSearch").addEventListener("input", renderLeads);

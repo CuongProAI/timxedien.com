@@ -35,11 +35,13 @@ function buildContract(order, user) {
 Độc lập - Tự do - Hạnh phúc
 -------------oOo-------------
 
-HỢP ĐỒNG THUÊ XE ĐIỆN TỰ LÁI
-(Số: ${order.code}/HĐCTXTL)
+HỢP ĐỒNG THUÊ XE Ô TÔ ĐIỆN TỰ LÁI
+Số: ${order.code}/HĐ-TXD
 
-- Căn cứ Bộ luật Dân sự số 91/2015/QH13 có hiệu lực thi hành từ 01/01/2017;
-- Căn cứ Luật Thương mại số 36/2005/QH11 có hiệu lực thi hành từ 01/01/2006;
+- Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015;
+- Căn cứ Luật Thương mại số 36/2005/QH11 ngày 14/06/2005;
+- Căn cứ Luật Giao dịch điện tử số 20/2023/QH15 ngày 22/06/2023;
+- Căn cứ nhu cầu và khả năng của các Bên.
 
 Hôm nay, ngày ${now.getDate()} tháng ${now.getMonth() + 1} năm ${now.getFullYear()}, tại TP. Cần Thơ, chúng tôi gồm:
 
@@ -47,6 +49,7 @@ BÊN CHO THUÊ XE (BÊN A): TIMXEDIEN.COM
 Địa chỉ: TP. Cần Thơ
 Điện thoại: 0939.099.018
 Email: timxedien@gmail.com
+Đại diện: Người có thẩm quyền của TimXeDien.com
 
 BÊN THUÊ XE (BÊN B):
 Họ và tên: ${user.name}
@@ -86,11 +89,22 @@ Hình thức thanh toán: Bên B đã thanh toán tiền cọc giữ chỗ 500.0
 4. Trả xe đúng thời gian, địa điểm đã thoả thuận; báo ngay cho Bên A qua hotline nếu có sự cố phát sinh.
 5. Thanh toán đầy đủ, đúng hạn giá trị hợp đồng và các khoản phụ phí phát sinh (nếu có) cho Bên A.
 
-ĐIỀU 6: ĐIỀU KHOẢN CHUNG
-Hợp đồng này được lập dưới hình thức điện tử. Việc Bên B xác nhận đồng ý bằng thao tác điện tử (tích chọn và xác nhận trên hệ thống TimXeDien.com) có giá trị pháp lý tương đương chữ ký tay, theo quy định của Luật Giao dịch điện tử. Hợp đồng có hiệu lực kể từ thời điểm Bên B xác nhận điện tử cho đến khi hai Bên hoàn tất thủ tục trả xe.
+ĐIỀU 6: SỰ KIỆN BẤT KHẢ KHÁNG VÀ GIẢI QUYẾT TRANH CHẤP
+1. Bên gặp sự kiện bất khả kháng phải thông báo cho Bên còn lại trong thời gian sớm nhất và cung cấp tài liệu chứng minh khi được yêu cầu.
+2. Mọi tranh chấp trước hết được giải quyết bằng thương lượng. Nếu không đạt thỏa thuận, tranh chấp được giải quyết tại cơ quan có thẩm quyền theo quy định pháp luật Việt Nam.
+
+ĐIỀU 7: BẢO VỆ THÔNG TIN VÀ ĐIỀU KHOẢN CHUNG
+1. Thông tin CCCD, GPLX, chữ ký và dữ liệu giao dịch chỉ được sử dụng để xác minh, lập và thực hiện hợp đồng, giải quyết khiếu nại và đáp ứng yêu cầu hợp pháp của cơ quan có thẩm quyền.
+2. Hợp đồng được lập dưới dạng thông điệp dữ liệu, có thể truy cập và sử dụng để tham chiếu. Các Bên thống nhất sử dụng phương thức xác nhận điện tử trên hệ thống TimXeDien.com.
+3. Hợp đồng có hiệu lực từ thời điểm Bên B hoàn tất xác nhận điện tử và kéo dài đến khi các Bên hoàn thành toàn bộ nghĩa vụ, trừ nghĩa vụ còn tiếp tục theo thỏa thuận hoặc pháp luật.
+4. Nội dung hợp đồng, nét ký điện tử, họ tên người ký, tài khoản xác minh, thời điểm ký và thông tin kỹ thuật kèm theo được lưu cùng một hồ sơ giao dịch để đối chiếu khi cần thiết.
+
+                         ĐẠI DIỆN BÊN A                         BÊN B - NGƯỜI THUÊ
+                         TIMXEDIEN.COM                          ${user.name}
+                         (Xác nhận theo hồ sơ hệ thống)         (Ký và ghi rõ họ tên trên hệ thống)
 
 XÁC NHẬN ĐIỆN TỬ CỦA BÊN B
-Bằng việc bấm "Xác nhận ký hợp đồng", Bên B xác nhận đã đọc, hiểu rõ và đồng ý với toàn bộ nội dung Hợp đồng nêu trên.`;
+Bằng việc tự tay tạo nét ký, tích chọn đồng ý và bấm "Xác nhận ký hợp đồng", Bên B xác nhận đã đọc, hiểu, tự nguyện chấp thuận toàn bộ nội dung Hợp đồng và chịu trách nhiệm về thông tin đã cung cấp.`;
 }
 
 function legalComplete(user) {
@@ -120,7 +134,7 @@ module.exports = async (req, res) => {
         const order = (orders || []).find((o) => o.code === requestedCode);
         if (!order) return res.status(404).json({ error: 'Không tìm thấy đơn' });
         const contract = latest[requestedCode];
-        if (contract) return res.status(200).json({ ok: true, signed: true, signedAt: contract.signed_at, content: contract.content });
+        if (contract) return res.status(200).json({ ok: true, signed: true, signedAt: contract.signed_at, content: contract.content, signatureImage: contract.signature_data || null, signerName: contract.signer_name || order.name, contentHash: contract.content_hash || null });
         const phone = phoneKey(order.user_phone || order.phone);
         const { data: user, error: uErr } = await supabase.from('users').select('*').eq('phone', phone).maybeSingle();
         if (uErr) throw uErr;
@@ -174,14 +188,17 @@ module.exports = async (req, res) => {
         legalComplete: legalComplete(user),
         signed: !!existing,
         signedAt: existing ? existing.signed_at : null,
-        content: existing ? existing.content : buildContract(order, user)
+        content: existing ? existing.content : buildContract(order, user),
+        signatureImage: existing ? existing.signature_data || null : null,
+        signerName: existing ? existing.signer_name || user.name : user.name,
+        contentHash: existing ? existing.content_hash || null : null
       });
     }
 
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     if (existing) {
-      return res.status(200).json({ ok: true, signed: true, signedAt: existing.signed_at, content: existing.content });
+      return res.status(200).json({ ok: true, signed: true, signedAt: existing.signed_at, content: existing.content, signatureImage: existing.signature_data || null, signerName: existing.signer_name || user.name, contentHash: existing.content_hash || null });
     }
     if (user.verify_status !== 'verified') {
       return res.status(403).json({ error: 'Tài khoản chưa xác minh CCCD/GPLX — vui lòng nộp và chờ duyệt trước khi ký hợp đồng.' });
@@ -190,17 +207,29 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Vui lòng hoàn thiện hồ sơ pháp lý (số CCCD, GPLX, địa chỉ thường trú) trong trang tài khoản trước khi ký hợp đồng.' });
     }
 
+    const body = req.body || {};
+    const signatureData = String(body.signature || '');
+    const signerName = String(body.signerName || '').trim().slice(0, 120);
+    if (body.consent !== true) return res.status(400).json({ error: 'Bạn cần xác nhận đã đọc và đồng ý với hợp đồng.' });
+    if (!/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(signatureData) || signatureData.length < 800 || signatureData.length > 600000) {
+      return res.status(400).json({ error: 'Chữ ký chưa hợp lệ. Vui lòng ký lại trong ô chữ ký.' });
+    }
+    if (!signerName || signerName.toLocaleLowerCase('vi-VN') !== String(user.name || '').trim().toLocaleLowerCase('vi-VN')) {
+      return res.status(400).json({ error: 'Họ tên người ký phải trùng với hồ sơ tài khoản đã xác minh.' });
+    }
+
     const content = buildContract(order, user);
+    const contentHash = crypto.createHash('sha256').update(content, 'utf8').digest('hex');
     const ip = String(req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || '').split(',')[0].trim();
     const userAgent = String(req.headers['user-agent'] || '').slice(0, 300);
 
     const { data: row, error: insErr } = await supabase
       .from('contracts')
-      .insert({ order_code: code, user_phone: phone, content, ip, user_agent: userAgent })
+      .insert({ order_code: code, user_phone: phone, content, signature_data: signatureData, signer_name: signerName, content_hash: contentHash, ip, user_agent: userAgent })
       .select().single();
     if (insErr) throw insErr;
 
-    return res.status(200).json({ ok: true, signed: true, signedAt: row.signed_at, content: row.content });
+    return res.status(200).json({ ok: true, signed: true, signedAt: row.signed_at, content: row.content, signatureImage: row.signature_data, signerName: row.signer_name, contentHash: row.content_hash });
   } catch (e) {
     console.error('contract error', e);
     return res.status(500).json({ error: 'Hệ thống bận, vui lòng thử lại.' });

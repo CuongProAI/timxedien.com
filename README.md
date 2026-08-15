@@ -54,6 +54,10 @@ Dữ liệu (đơn thuê, tài khoản, yêu cầu tư vấn) lưu trong **Supab
 
 Sau đó **Settings → Domains** — trỏ tên miền `timxedien.com`
 
+> Nếu dự án Supabase đã được tạo từ phiên bản cũ, hãy chạy lại `supabase-schema.sql`
+> trong SQL Editor. Các lệnh `add column if not exists` sẽ bổ sung nơi lưu nét ký,
+> họ tên người ký và mã kiểm tra nội dung mà không xóa dữ liệu hợp đồng cũ.
+
 ## 🔁 Luồng vận hành hằng ngày
 
 1. Khách đặt xe trên web → đơn lưu vào Supabase + **báo Telegram ngay**

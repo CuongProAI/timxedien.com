@@ -103,11 +103,17 @@ create table if not exists contracts (
   order_code text not null references orders (code) on delete cascade,
   user_phone text not null,
   content text not null,
+  signature_data text,
+  signer_name text,
+  content_hash text,
   signed_at timestamptz default now(),
   ip text,
   user_agent text
 );
 create index if not exists contracts_order_idx on contracts (order_code);
+alter table contracts add column if not exists signature_data text;
+alter table contracts add column if not exists signer_name text;
+alter table contracts add column if not exists content_hash text;
 
 -- ==== Quản trị nội dung frontend (admin sửa được, không cần deploy code) ====
 

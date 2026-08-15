@@ -728,15 +728,18 @@ footer{background:var(--navy);color:#aab4b0;padding:56px 0 0;font-size:14px}
 
 /* ---------- Hợp đồng điện tử ---------- */
 .contract-text{
-  white-space:pre-wrap;font-size:13.5px;line-height:1.7;color:#31463b;background:var(--mist);
-  border:1px solid var(--line);border-radius:14px;padding:20px;max-height:360px;overflow-y:auto;
+  white-space:pre-wrap;font-family:"Times New Roman",Times,serif;font-size:15px;line-height:1.62;color:#17251f;background:#fff;
+  border:1px solid var(--line);border-radius:14px;padding:30px 34px;max-height:480px;overflow-y:auto;
 }
+#contractModal .modal{max-width:860px}
 .ct-agree{display:flex;gap:10px;align-items:flex-start;margin:18px 0;font-size:14px;color:var(--txt)}
 .ct-agree input{margin-top:3px}
 .ct-box{margin-top:10px;font-size:13px}
 .ct-box.ct-signed{color:var(--green-d);font-weight:600}
 .ct-box.ct-hint{color:var(--mut)}
 .ct-box.ct-hint a{color:var(--green-d);font-weight:600}
+.signature-box{margin:16px 0;padding:15px;border:1px solid var(--line);border-radius:14px;background:#f8fbfa}.signature-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:9px}.signature-head b{font-size:14px;color:var(--ink)}.signature-head span{font-size:11.5px;color:var(--mut)}.signature-canvas{display:block;width:100%;height:170px;background:#fff;border:1.5px dashed #9fb8b1;border-radius:11px;touch-action:none;cursor:crosshair}.signature-tools{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:9px}.signature-tools input{flex:1;min-width:0;padding:9px 12px;border:1px solid var(--line);border-radius:9px}.signature-preview{display:none;width:100%;height:170px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:11px}.signature-legacy{display:none;padding:14px;background:#fff7ed;color:#9a5b13;border-radius:10px;font-size:13px}
+@media(max-width:640px){.signature-canvas,.signature-preview{height:145px}.signature-tools{align-items:stretch;flex-direction:column}}
 
 /* ============================================================
    TRANG CHỦ 2026 — NGÔN NGỮ THỊ GIÁC CÔNG NGHỆ HIỆN ĐẠI
