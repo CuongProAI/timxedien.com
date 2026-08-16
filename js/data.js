@@ -416,23 +416,20 @@ const USED_COMMITS = [
 
 // ---- PHỤ KIỆN XE ĐIỆN (trang phu-kien.html) ----
 const ACCESSORY_CATS = [
-  { id: "sac", label: "⚡ Sạc & thiết bị điện" },
-  { id: "baove", label: "🛡️ Bảo vệ xe" },
-  { id: "noithat", label: "🛋️ Nội thất & tiện nghi" },
-  { id: "congnghe", label: "📷 Công nghệ" }
+  { id: "all", label: "Tất cả sản phẩm" }
 ];
 
 const ACCESSORIES = [
-  { id: "pk-sacdiddong", cat: "sac", icon: "🔌", name: "Sạc di động 3,5kW", price: "3,5 – 6 triệu", img: "images/accessories/portable-charger.png", badge: "Thiết yếu", note: "Bảo hành 12 tháng", desc: "Sạc mọi nơi có ổ điện gia đình. Vật bất ly thân cho chủ xe điện ở trọ, chung cư chưa có trạm." },
-  { id: "pk-wallbox", cat: "sac", icon: "⚡", name: "Trụ sạc treo tường 7,4kW", price: "12 – 18 triệu", img: "images/accessories/wallbox.jpg", badge: "Lắp tận nhà", note: "Đã gồm khảo sát điện", desc: "Sạc đầy qua đêm nhanh gấp đôi. Khảo sát điện nhà miễn phí tại Cần Thơ, lắp trong 1 buổi." },
-  { id: "pk-capsac", cat: "sac", icon: "🧵", name: "Cáp sạc & adapter dự phòng", price: "800k – 2,5 triệu", img: "images/accessories/charging-cable.jpg", badge: "Đi tỉnh an tâm", note: "Kiểm tra tương thích miễn phí", desc: "Cáp Type 2 nhiều độ dài và adapter chuyển đổi — chủ động khi đi tỉnh xa hoặc về quê." },
-  { id: "pk-ppf", cat: "baove", icon: "🛡️", name: "Dán PPF chống trầy toàn xe", price: "15 – 45 triệu", img: "images/accessories/car-premium.jpg", badge: "Giữ giá xe", note: "Bảo hành theo vật liệu", desc: "Phim bảo vệ sơn tự phục hồi vết xước nhẹ — phù hợp xe mới và xe thường xuyên chạy đường dài." },
-  { id: "pk-phim", cat: "baove", icon: "🕶️", name: "Phim cách nhiệt 3M / LLumar", price: "4 – 8 triệu", img: "images/accessories/window-tint.jpg", badge: "Đáng lắp nhất", note: "Có máy đo thông số phim", desc: "Giảm nóng rõ rệt, tiết kiệm pin điều hòa — đặc biệt hữu ích với khí hậu nắng nóng miền Tây." },
-  { id: "pk-ceramic", cat: "baove", icon: "✨", name: "Phủ ceramic bóng sơn", price: "3 – 12 triệu", img: "images/accessories/ppf-detailing.jpg", badge: "Chăm sóc sơn", note: "Thi công tại xưởng", desc: "Tạo độ bóng, hạn chế ố nước và giúp xe dễ vệ sinh hơn trong mùa mưa tại Cần Thơ." },
-  { id: "pk-tham", cat: "noithat", icon: "🧩", name: "Thảm sàn theo xe", price: "1,2 – 2,5 triệu", img: "images/accessories/floor-mats.jpg", badge: "May đo theo xe", note: "Chống nước, dễ vệ sinh", desc: "Cắt chuẩn từng dòng VinFast, phủ kín sàn và chống nước — hợp mùa mưa và những chuyến về quê." },
-  { id: "pk-bocghe", cat: "noithat", icon: "🛋️", name: "Bọc ghế da Nappa", price: "8 – 15 triệu", img: "images/accessories/seat-upholstery.jpg", badge: "May thủ công", note: "Chọn màu và chất da", desc: "Nâng cấp nội thất, dễ vệ sinh khi chở trẻ nhỏ hoặc chạy dịch vụ thường xuyên." },
-  { id: "pk-gheem", cat: "noithat", icon: "👶", name: "Ghế an toàn trẻ em ISOFIX", price: "2 – 5 triệu", img: "images/accessories/child-seat-actual.jpg", badge: "An toàn gia đình", note: "Tư vấn theo tuổi và cân nặng", desc: "Lắp đúng điểm neo ISOFIX có sẵn trên xe. Chọn ghế theo độ tuổi, cân nặng và thói quen di chuyển của bé." },
-  { id: "pk-camera", cat: "congnghe", icon: "📷", name: "Camera hành trình trước–sau", price: "2 – 6 triệu", img: "images/accessories/dashcam.jpg", badge: "Lắp trong ngày", note: "Xem lại qua điện thoại", desc: "Ghi hình 2K/4K, lưu bằng chứng va chạm và hỗ trợ giám sát khi cho thuê lại xe." },
-  { id: "pk-tpms", cat: "congnghe", icon: "🛞", name: "Cảm biến áp suất lốp TPMS", price: "1,5 – 3 triệu", img: "images/accessories/tire-service.jpg", badge: "An tâm đường xa", note: "Cài ngưỡng cảnh báo", desc: "Theo dõi tình trạng lốp theo thời gian thực — giúp tránh hao pin và phát hiện sớm lốp non hơi." },
-  { id: "pk-bom", cat: "congnghe", icon: "💨", name: "Bơm lốp điện + bộ cứu hộ", price: "700k – 1,8 triệu", img: "images/accessories/tire-service.jpg", badge: "Gọn cốp xe", note: "Hướng dẫn sử dụng tại chỗ", desc: "Bơm pin sạc, bộ vá khẩn cấp và đèn tín hiệu — bộ đồ nghề gọn cho mọi chuyến đi xa." }
+  { id: "VINFASTVF3SCALECARMODELS", name: "Mô Hình Xe VinFast VF 3", price: "2.026.895 VNĐ", img: "images/accessories/vf3-model.png", url: "https://shop.vinfastauto.com/vn_vi/VINFASTVF3SCALECARMODELS.html" },
+  { id: "3DTRUNKMATVF6", name: "Thảm Cốp 3D VF 6", price: "712.581 VNĐ", img: "images/accessories/vf6-trunk-mat.png", url: "https://shop.vinfastauto.com/vn_vi/3DTRUNKMATVF6.html" },
+  { id: "EEP70051005", name: "VF 6 Tấm Che Pin Cao Áp", price: "6.878.002 VNĐ", img: "images/accessories/vf6-battery-cover.png", url: "https://shop.vinfastauto.com/vn_vi/EEP70051005.html" },
+  { id: "VF3ROOFRACKCROSSBAR", name: "Bộ Thanh Ngang Giá Nóc VF 3", price: "1.436.000 VNĐ", img: "images/accessories/vf3-roof-rack.png", url: "https://shop.vinfastauto.com/vn_vi/VF3ROOFRACKCROSSBAR.html" },
+  { id: "EEP31001000", name: "VF 8 Tấm Che Pin Cao Áp", price: "8.140.001 VNĐ", img: "images/accessories/vf8-battery-cover.png", url: "https://shop.vinfastauto.com/vn_vi/EEP31001000.html" },
+  { id: "EEP73111000AA", name: "VF 5 Tấm Che Pin Cao Áp", price: "4.947.002 VNĐ", img: "images/accessories/vf5-battery-cover.png", url: "https://shop.vinfastauto.com/vn_vi/EEP73111000AA.html" },
+  { id: "NERIOGREENBATTERYCOVER", name: "Tấm Che Pin Cao Áp VinFast Nerio Green", price: "5.818.527 VNĐ", img: "images/accessories/nerio-battery-cover.png", url: "https://shop.vinfastauto.com/vn_vi/NERIOGREENBATTERYCOVER.html" },
+  { id: "EEP71061000", name: "VF 7 Tấm Che Pin Cao Áp", price: "6.881.001 VNĐ", img: "images/accessories/vf7-battery-cover.png", url: "https://shop.vinfastauto.com/vn_vi/EEP71061000.html" },
+  { id: "EEP80001000", name: "VF 9 Tấm Che Pin Cao Áp", price: "8.998.001 VNĐ", img: "images/accessories/vf9-battery-cover.png", url: "https://shop.vinfastauto.com/vn_vi/EEP80001000.html" },
+  { id: "INSULATIONFILMVF3", name: "Gói Dán Film Cách Nhiệt VinFast VF 3", price: "4.932.062 VNĐ", img: "images/accessories/vf3-insulation-film.png", url: "https://shop.vinfastauto.com/vn_vi/INSULATIONFILMVF3.html" },
+  { id: "INSULATIONFILMCEILINGVF7", name: "Gói Film Cách Nhiệt Dán Trần VinFast VF 7", price: "5.724.596 VNĐ", img: "images/accessories/vf7-roof-film.png", url: "https://shop.vinfastauto.com/vn_vi/INSULATIONFILMCEILINGVF7.html" },
+  { id: "ACS30000142", name: "Thanh Ngang Giá Nóc VinFast VF 8", price: "18.360.000 VNĐ", img: "images/accessories/vf8-roof-rack.png", url: "https://shop.vinfastauto.com/vn_vi/ACS30000142.html" }
 ];
