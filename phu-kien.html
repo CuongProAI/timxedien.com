@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="css/style.css">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-<body data-page="phukien">
+<body data-page="phukien" class="accessory-page">
 
 <!-- ===== Topbar ===== -->
 <div class="topbar">
@@ -46,15 +46,36 @@
   </div>
 </header>
 
-<!-- ===== Hero trang ===== -->
-<div class="page-hero">
-  <div class="container">
-    <div class="crumb"><a href="index.html">Trang chủ</a> / Phụ kiện xe điện</div>
-    <h1>Phụ kiện xe điện — <span class="hl">tư vấn đúng nhu cầu, lắp tận nhà</span></h1>
-    <p class="lead">Từ trụ sạc treo tường đến phim cách nhiệt, camera hành trình — chúng tôi tư vấn miễn phí món nào đáng tiền cho xe và thói quen sử dụng của bạn, báo giá trọn gói, lắp đặt tại nhà hoặc xưởng đối tác ở Cần Thơ, bảo hành 12 tháng.</p>
-    <div class="hero-cta">
-      <a href="#danh-muc" class="btn btn-primary">Xem danh mục phụ kiện</a>
-      <button class="btn btn-ghost" data-consult="Tư vấn combo phụ kiện xe mới">Combo cho xe mới nhận</button>
+<!-- ===== Hero phụ kiện ===== -->
+<div class="accessory-hero">
+  <div class="container accessory-hero-grid">
+    <div class="accessory-hero-copy">
+      <div class="crumb"><a href="index.html">Trang chủ</a><span>›</span> Phụ kiện xe điện</div>
+      <span class="accessory-eyebrow"><i></i> Phụ kiện thực tế · Lắp đặt tại Cần Thơ</span>
+      <h1>Chọn đúng phụ kiện.<br><span>Xe tiện hơn mỗi ngày.</span></h1>
+      <p>Từ bộ sạc, phim cách nhiệt đến camera hành trình — xem hình sản phẩm thực tế, nhận tư vấn theo đúng dòng xe và báo giá trọn gói trước khi lắp.</p>
+      <div class="hero-cta">
+        <a href="#danh-muc" class="btn btn-primary">Xem 12 phụ kiện thực tế</a>
+        <button class="btn btn-hero-outline" data-consult="Tư vấn combo phụ kiện xe mới">Nhận combo theo dòng xe</button>
+      </div>
+      <div class="accessory-hero-trust">
+        <span><b>12 tháng</b> bảo hành</span>
+        <span><b>Miễn phí</b> khảo sát</span>
+        <span><b>Trong ngày</b> lắp đặt</span>
+      </div>
+    </div>
+    <div class="accessory-showcase" aria-label="Hình ảnh thực tế phụ kiện xe điện">
+      <figure class="showcase-main">
+        <img src="images/accessories/wallbox.jpg" alt="Thiết bị sạc xe điện thực tế" fetchpriority="high">
+        <figcaption><span>⚡</span><div><b>Giải pháp sạc tại nhà</b><small>Khảo sát điện miễn phí</small></div></figcaption>
+      </figure>
+      <figure class="showcase-small showcase-top">
+        <img src="images/accessories/portable-charger.png" alt="Bộ sạc xe điện di động thực tế">
+      </figure>
+      <figure class="showcase-small showcase-bottom">
+        <img src="images/accessories/window-tint.jpg" alt="Phim cách nhiệt trên xe thực tế">
+        <span>Ảnh thực tế</span>
+      </figure>
     </div>
   </div>
 </div>
@@ -62,10 +83,10 @@
 <!-- ===== USP ===== -->
 <div class="usp">
   <div class="container usp-grid">
-    <div class="usp-item"><div class="ico">🏠</div><div><b>Lắp đặt tận nhà</b><span>Kỹ thuật viên đến tận nơi trong nội ô Cần Thơ</span></div></div>
-    <div class="usp-item"><div class="ico">🛡️</div><div><b>Bảo hành 12 tháng</b><span>Đổi mới trong 30 ngày nếu lỗi nhà sản xuất</span></div></div>
-    <div class="usp-item"><div class="ico">💯</div><div><b>Hàng chính hãng</b><span>3M, LLumar, hãng phụ kiện uy tín — có hóa đơn</span></div></div>
-    <div class="usp-item"><div class="ico">🎯</div><div><b>Tư vấn trung thực</b><span>Không cần thì khuyên đừng mua — giữ khách lâu dài</span></div></div>
+    <div class="usp-item"><div class="ico">01</div><div><b>Chọn đúng theo xe</b><span>Kiểm tra tương thích trước khi báo giá</span></div></div>
+    <div class="usp-item"><div class="ico">02</div><div><b>Giá trọn gói rõ ràng</b><span>Báo trước vật tư và công lắp đặt</span></div></div>
+    <div class="usp-item"><div class="ico">03</div><div><b>Lắp tại Cần Thơ</b><span>Tận nhà hoặc xưởng đối tác phù hợp</span></div></div>
+    <div class="usp-item"><div class="ico">04</div><div><b>Có bảo hành sau lắp</b><span>Tiếp nhận nhanh qua Hotline và Zalo</span></div></div>
   </div>
 </div>
 
@@ -73,9 +94,9 @@
 <section id="danh-muc">
   <div class="container">
     <div class="sec-head reveal">
-      <span class="kicker">Danh mục</span>
-      <h2>Phụ kiện đáng tiền cho xe điện của bạn</h2>
-      <p>Giá là khoảng tham khảo theo dòng xe và hãng phụ kiện — bấm "Tư vấn & báo giá" để nhận giá chính xác cho xe của bạn.</p>
+      <span class="kicker">Danh mục thực tế</span>
+      <h2>Phụ kiện đáng tiền cho xe điện</h2>
+      <p>Ảnh giúp bạn nhận diện sản phẩm và hạng mục thi công. Giá tham khảo sẽ được chốt lại theo dòng xe, thương hiệu và yêu cầu lắp đặt.</p>
     </div>
     <div class="fleet-bar" style="justify-content:center">
       <div class="filters" id="accFilters">
@@ -83,35 +104,34 @@
       </div>
     </div>
     <div class="acc-grid" id="accGrid"><!-- JS render --></div>
+    <p class="acc-image-disclaimer">Ảnh chụp thực tế dùng để minh họa sản phẩm và hạng mục lắp đặt. Mẫu mã, thương hiệu và cấu hình bàn giao được xác nhận cụ thể trong báo giá. Nguồn ảnh tham khảo: <a href="https://commons.wikimedia.org/" target="_blank" rel="noopener">Wikimedia Commons</a> và <a href="https://unsplash.com/" target="_blank" rel="noopener">Unsplash</a>.</p>
   </div>
 </section>
 
 <!-- ===== Combo ===== -->
-<section class="alt">
+<section class="alt accessory-combo-section">
   <div class="container">
-    <div class="longterm reveal">
-      <div>
-        <span class="hero-badge">🎁 Combo tiết kiệm</span>
-        <h2>Vừa nhận xe điện mới? Đây là combo được chọn nhiều nhất</h2>
-        <p class="lead">90% khách mới nhận xe tại Cần Thơ chọn bộ này: phim cách nhiệt + thảm 6D + camera hành trình + sạc di động. Lắp trọn bộ trong 1 buổi, tiết kiệm 10–15% so với mua lẻ từng món.</p>
-        <ul class="lt-points">
-          <li><span class="d">✓</span> Tư vấn theo đúng dòng xe (VF 3 khác VF 8 — không tư vấn thừa)</li>
-          <li><span class="d">✓</span> Đặt lịch trước, làm 1 buổi lấy xe ngay trong ngày</li>
-          <li><span class="d">✓</span> Khách thuê dài hạn của TimXeDien giảm thêm 5%</li>
-        </ul>
-        <div class="hero-cta">
-          <button class="btn btn-white" data-consult="Tư vấn combo phụ kiện xe mới">Nhận báo giá combo theo xe</button>
-          <a href="tel:0939099018" class="btn btn-ghost" data-cfg="telLink2">📞 0939.099.018</a>
-        </div>
+    <div class="accessory-combo reveal">
+      <div class="combo-gallery">
+        <img class="combo-photo-main" src="images/accessories/car-premium.jpg" alt="Xe sau khi hoàn thiện gói phụ kiện bảo vệ">
+        <img class="combo-photo-float" src="images/accessories/dashcam.jpg" alt="Camera hành trình lắp thực tế trên xe">
+        <div class="combo-stamp"><b>4 món</b><span>lắp trong 1 buổi</span></div>
       </div>
-      <div class="lt-table">
-        <table>
-          <tr><th>Combo xe mới</th><th>Gồm</th></tr>
-          <tr><td>Cơ bản</td><td><b>Phim cách nhiệt + thảm 6D</b> — từ 5,5 triệu</td></tr>
-          <tr><td>Đủ dùng</td><td><b>+ Camera hành trình + TPMS</b> — từ 9,5 triệu</td></tr>
-          <tr><td>Trọn gói</td><td><b>+ Sạc di động + phủ ceramic</b> — từ 16 triệu</td></tr>
-          <tr><td colspan="2" style="font-size:13px;color:var(--mut)">Giá thay đổi theo dòng xe & hãng vật tư — báo giá chính xác sau khi khảo sát (miễn phí).</td></tr>
-        </table>
+      <div class="combo-copy">
+        <span class="hero-badge">🎁 Combo cho xe mới</span>
+        <h2>Nhận xe mới, nên lắp gì trước?</h2>
+        <p class="lead">Ưu tiên theo nhu cầu thật: chống nóng, bảo vệ nội thất, ghi lại hành trình và chủ động sạc. Không ép mua món chưa cần.</p>
+        <div class="combo-list">
+          <div><span>01</span><p><b>Phim cách nhiệt</b><small>Giảm nóng, giảm tải điều hòa</small></p></div>
+          <div><span>02</span><p><b>Thảm sàn theo xe</b><small>Giữ nội thất sạch trong mùa mưa</small></p></div>
+          <div><span>03</span><p><b>Camera hành trình</b><small>Ghi hình trước–sau, xem qua app</small></p></div>
+          <div><span>04</span><p><b>Sạc di động</b><small>Chủ động sạc khi đi xa</small></p></div>
+        </div>
+        <div class="combo-price"><span>Combo tham khảo từ</span><b>9,5 triệu</b><small>Giá thay đổi theo dòng xe và thương hiệu vật tư.</small></div>
+        <div class="hero-cta">
+          <button class="btn btn-primary" data-consult="Tư vấn combo phụ kiện xe mới">Nhận báo giá theo xe</button>
+          <a href="tel:0939099018" class="btn btn-outline" data-cfg="telLink2">📞 0939.099.018</a>
+        </div>
       </div>
     </div>
   </div>
@@ -217,13 +237,21 @@
   function render() {
     const items = ACCESSORIES.filter((a) => cat === "all" || a.cat === cat);
     $("#accGrid").innerHTML = items.map((a) => `
-      <div class="acc-card reveal visible">
-        <div class="acc-ico">${a.icon}</div>
-        <h3>${a.name}</h3>
-        <div class="price">${a.price}</div>
-        <p>${a.desc}</p>
-        <button class="btn btn-primary btn-sm" data-acc="${a.id}">Tư vấn & báo giá</button>
-      </div>`).join("");
+      <article class="acc-card reveal visible">
+        <div class="acc-media">
+          <img src="${a.img}" alt="Hình thực tế ${a.name}" loading="lazy">
+          <span class="acc-photo-label">Ảnh thực tế</span>
+          ${a.badge ? `<span class="acc-badge">${a.badge}</span>` : ""}
+        </div>
+        <div class="acc-card-body">
+          <div class="acc-category"><span>${a.icon}</span>${ACCESSORY_CATS.find((c) => c.id === a.cat).label.replace(/^\S+\s/, "")}</div>
+          <h3>${a.name}</h3>
+          <div class="price"><small>Giá tham khảo</small>${a.price}</div>
+          <p>${a.desc}</p>
+          <div class="acc-note"><span>✓</span>${a.note}</div>
+          <button class="btn btn-primary btn-sm" data-acc="${a.id}">Tư vấn món này <span>→</span></button>
+        </div>
+      </article>`).join("");
     $$("#accGrid [data-acc]").forEach((b) => b.addEventListener("click", () => {
       const a = ACCESSORIES.find((x) => x.id === b.dataset.acc);
       openConsult(`Phụ kiện: ${a.name}`, `${a.icon} ${a.name} — giá tham khảo ${a.price}. Cho chúng tôi biết dòng xe của bạn để báo giá chính xác kèm lịch lắp đặt.`);
