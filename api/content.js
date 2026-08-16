@@ -1,9 +1,9 @@
 // API gộp nội dung nhẹ của trang chủ: thông tin chung (site_config),
-// câu hỏi thường gặp (faqs), đánh giá khách hàng (reviews), chatbot tư vấn —
+// câu hỏi thường gặp (faqs), đánh giá khách hàng (reviews), phụ kiện (accessories), chatbot tư vấn —
 // gộp chung 1 file để không vượt giới hạn 12 Serverless Functions của gói Hobby trên Vercel.
 // api/fleet.js tách riêng vì có thêm phần upload ảnh.
 //
-// GET  /api/content?type=config|faqs|reviews  — công khai (chỉ mục đang bật,
+// GET  /api/content?type=config|faqs|reviews|accessories  — công khai (chỉ mục đang bật,
 //      trừ khi gửi đúng x-admin-key thì trả cả mục đang ẩn)
 // POST /api/content  { type, action: add|update|delete, ... }  — luôn cần ADMIN_KEY
 // POST /api/content  { type: "chatbot", message, history }     — công khai, không cần ADMIN_KEY
@@ -25,6 +25,13 @@ function rowToConfig(row) {
 }
 function rowToFaq(row) { return { id: row.id, q: row.question, a: row.answer, active: row.active, sortOrder: row.sort_order }; }
 function rowToReview(row) { return { id: row.id, name: row.name, role: row.role, stars: row.stars, text: row.text, active: row.active, sortOrder: row.sort_order }; }
+function rowToAccessory(row) {
+  return {
+    id: row.id, name: row.name, price: Number(row.price) || 0, img: row.image_url,
+    url: row.product_url, source: row.source || 'VinFast', active: row.active,
+    sortOrder: row.sort_order
+  };
+}
 
 const money = (n) => Number(n || 0).toLocaleString('vi-VN') + 'đ';
 
@@ -123,7 +130,14 @@ module.exports = async (req, res) => {
         if (error) throw error;
         return res.status(200).json({ ok: true, reviews: data.map(rowToReview) });
       }
-      return res.status(400).json({ error: 'Thiếu type hợp lệ (config | faqs | reviews)' });
+      if (type === 'accessories') {
+        let q = supabase.from('accessory_products').select('*').order('sort_order', { ascending: true });
+        if (!isAdmin(req)) q = q.eq('active', true);
+        const { data, error } = await q;
+        if (error) throw error;
+        return res.status(200).json({ ok: true, accessories: data.map(rowToAccessory) });
+      }
+      return res.status(400).json({ error: 'Thiếu type hợp lệ (config | faqs | reviews | accessories)' });
     }
 
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -218,7 +232,48 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Hành động không hợp lệ' });
     }
 
-    return res.status(400).json({ error: 'Thiếu type hợp lệ (config | faqs | reviews)' });
+    // ---------- Phụ kiện chính hãng ----------
+    if (type === 'accessories') {
+      if (action === 'add') {
+        const id = clip(body.id, 100), name = clip(body.name, 250);
+        const imageUrl = clip(body.img, 1000), productUrl = clip(body.url, 1000);
+        if (!id || !name || !imageUrl || !productUrl) return res.status(400).json({ error: 'Cần nhập đủ mã, tên, ảnh và liên kết sản phẩm' });
+        const { data: maxRow } = await supabase.from('accessory_products').select('sort_order').order('sort_order', { ascending: false }).limit(1).maybeSingle();
+        const { data, error } = await supabase.from('accessory_products').insert({
+          id, name, price: Math.max(0, Number(body.price) || 0), image_url: imageUrl,
+          product_url: productUrl, source: clip(body.source || 'VinFast', 100),
+          sort_order: (maxRow ? maxRow.sort_order : 0) + 1, active: body.active !== false
+        }).select().single();
+        if (error) throw error;
+        return res.status(200).json({ ok: true, accessory: rowToAccessory(data) });
+      }
+      if (action === 'update') {
+        const id = clip(body.id, 100);
+        if (!id) return res.status(400).json({ error: 'Thiếu mã sản phẩm' });
+        const patch = { updated_at: new Date().toISOString() };
+        if (body.name !== undefined) patch.name = clip(body.name, 250);
+        if (body.price !== undefined) patch.price = Math.max(0, Number(body.price) || 0);
+        if (body.img !== undefined) patch.image_url = clip(body.img, 1000);
+        if (body.url !== undefined) patch.product_url = clip(body.url, 1000);
+        if (body.source !== undefined) patch.source = clip(body.source, 100);
+        if (body.active !== undefined) patch.active = !!body.active;
+        if (body.sortOrder !== undefined) patch.sort_order = Number(body.sortOrder) || 0;
+        const { data, error } = await supabase.from('accessory_products').update(patch).eq('id', id).select().maybeSingle();
+        if (error) throw error;
+        if (!data) return res.status(404).json({ error: 'Không tìm thấy sản phẩm' });
+        return res.status(200).json({ ok: true, accessory: rowToAccessory(data) });
+      }
+      if (action === 'delete') {
+        const id = clip(body.id, 100);
+        if (!id) return res.status(400).json({ error: 'Thiếu mã sản phẩm' });
+        const { error } = await supabase.from('accessory_products').delete().eq('id', id);
+        if (error) throw error;
+        return res.status(200).json({ ok: true });
+      }
+      return res.status(400).json({ error: 'Hành động không hợp lệ' });
+    }
+
+    return res.status(400).json({ error: 'Thiếu type hợp lệ (config | faqs | reviews | accessories)' });
   } catch (e) {
     console.error('content error', e);
     return res.status(500).json({ error: 'Lỗi hệ thống' });

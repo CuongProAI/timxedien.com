@@ -623,8 +623,12 @@ footer{background:var(--navy);color:#aab4b0;padding:56px 0 0;font-size:14px}
 /* ---------- Phụ kiện ---------- */
 .accessory-page{background:#f7faf8}
 .accessory-page header.site{background:rgba(25,42,50,.96);border-bottom:1px solid rgba(255,255,255,.08)}
+.accessory-page header.site .logo{color:#f8fffc}
+.accessory-page header.site .logo b{color:#48d7a5}
+.accessory-page header.site .logo small{color:#9fb4ad}
 .accessory-page header.site .menu a{color:#d7e2de}
 .accessory-page header.site .menu a:hover{color:#6ee7b7}
+.accessory-page header.site .nav-account{color:#f3faf7;border-color:#71837e}
 
 .accessory-hero{position:relative;overflow:hidden;background:#172b31;color:#fff;padding:70px 0 78px}
 .accessory-hero::before{content:"";position:absolute;inset:-30% auto auto -12%;width:620px;height:620px;border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,.18),transparent 68%);pointer-events:none}
@@ -762,19 +766,19 @@ footer{background:var(--navy);color:#aab4b0;padding:56px 0 0;font-size:14px}
 
 /* ---------- Phụ kiện chính hãng VinFast — giao diện tối giản ---------- */
 .official-accessory-hero{background:#f4f6f8;border-bottom:1px solid #e3e8eb;padding:58px 0 52px}
-.official-accessory-hero .crumb{display:flex;gap:9px;align-items:center;color:#7b868c;font-size:13px;margin-bottom:25px}
+.official-accessory-hero .crumb{display:flex;gap:9px;align-items:center;color:#5b6a71;font-size:13px;margin-bottom:25px}
 .official-accessory-hero .crumb a{color:#1464a5}
 .official-label{display:inline-flex;align-items:center;gap:8px;color:#1464a5;background:#e8f2fa;border-radius:100px;padding:7px 13px;font-size:12px;font-weight:700}
 .official-label::before{content:"✓";display:grid;place-items:center;width:17px;height:17px;border-radius:50%;color:#fff;background:#1464a5;font-size:10px}
 .official-accessory-hero h1{font-size:39px;line-height:1.2;color:#17272e;letter-spacing:-.6px;margin:18px 0 10px}
-.official-accessory-hero p{max-width:680px;color:#66757c;font-size:15px;line-height:1.65}
+.official-accessory-hero p{max-width:680px;color:#596970;font-size:15px;line-height:1.65}
 .official-source{display:inline-flex;align-items:center;gap:8px;margin-top:20px;color:#1464a5;font-size:14px;font-weight:700}
 .official-source:hover{text-decoration:underline;text-underline-offset:3px}
 .accessory-page #danh-muc{padding:70px 0 84px;background:#fff}
 .official-product-head{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:32px}
 .official-product-head .kicker{display:block;color:#1464a5;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
 .official-product-head h2{font-size:28px;color:#17272e;letter-spacing:-.3px}
-.official-count{color:#68767c;background:#f2f5f6;border-radius:100px;padding:8px 14px;font-size:13px;white-space:nowrap}
+.official-count{color:#506068;background:#f2f5f6;border-radius:100px;padding:8px 14px;font-size:13px;white-space:nowrap}
 .accessory-page .acc-grid{grid-template-columns:repeat(4,1fr);gap:20px}
 .accessory-page .acc-card{border:1px solid #e1e6e8;border-radius:10px;box-shadow:none;background:#fff;transform:none}
 .accessory-page .acc-card:hover{transform:none;box-shadow:0 10px 30px rgba(18,42,52,.09);border-color:#c7d1d6}
@@ -783,13 +787,13 @@ footer{background:var(--navy);color:#aab4b0;padding:56px 0 0;font-size:14px}
 .accessory-page .acc-card:hover .acc-media img{transform:none}
 .official-badge{position:absolute;top:12px;left:12px;color:#1464a5;background:rgba(255,255,255,.94);border:1px solid #dbe8f1;border-radius:4px;padding:5px 8px;font-size:10px;font-weight:700}
 .accessory-page .acc-card-body{padding:18px}
-.acc-code{color:#8a969b;font-size:10.5px;letter-spacing:.2px;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acc-code{color:#596970;font-size:10.5px;letter-spacing:.2px;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .accessory-page .acc-card h3{min-height:49px;font-size:15.5px;line-height:1.5;color:#25373f;font-weight:600}
 .accessory-page .acc-card .price{margin:12px 0 18px;color:#17272e;font-size:18px}
-.accessory-page .acc-card .price small{color:#8b989e;font-size:10px;margin-bottom:3px}
+.accessory-page .acc-card .price small{color:#596970;font-size:10px;margin-bottom:3px}
 .official-product-link{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #edf0f2;padding-top:14px;color:#1464a5;font-size:13px;font-weight:700}
 .official-product-link:hover{text-decoration:underline;text-underline-offset:3px}
-.official-price-note{max-width:760px;margin:28px auto 0;text-align:center;color:#7b888e;font-size:12px;line-height:1.65}
+.official-price-note{max-width:760px;margin:28px auto 0;text-align:center;color:#596970;font-size:12px;line-height:1.65}
 @media (max-width:1050px){.accessory-page .acc-grid{grid-template-columns:repeat(3,1fr)}}
 @media (max-width:780px){
   .accessory-page .acc-grid{grid-template-columns:repeat(2,1fr)}

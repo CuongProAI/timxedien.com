@@ -1,5 +1,5 @@
 // ============================================================
-// TIMXEDIEN — NẠP DỮ LIỆU THẬT TỪ ADMIN (CONFIG/FLEET/FAQS/REVIEWS)
+// TIMXEDIEN — NẠP DỮ LIỆU THẬT TỪ ADMIN (CONFIG/FLEET/FAQS/REVIEWS/ACCESSORIES)
 // Trang luôn hiện dữ liệu tĩnh trong js/data.js trước tiên (nhanh, không
 // phụ thuộc mạng) — nếu gọi API thành công thì âm thầm cập nhật lại nội
 // dung mới nhất mà admin đã sửa, không chặn hay làm chậm lần hiện đầu tiên.
@@ -19,11 +19,12 @@
   }
 
   async function loadLive() {
-    const [cfg, fleet, faqs, reviews] = await Promise.all([
+    const [cfg, fleet, faqs, reviews, accessories] = await Promise.all([
       fetchJson("/api/content?type=config"),
       fetchJson("/api/fleet"),
       fetchJson("/api/content?type=faqs"),
-      fetchJson("/api/content?type=reviews")
+      fetchJson("/api/content?type=reviews"),
+      fetchJson("/api/content?type=accessories")
     ]);
 
     let changed = false;
@@ -45,6 +46,11 @@
     if (reviews && reviews.ok && Array.isArray(reviews.reviews) && reviews.reviews.length && typeof REVIEWS !== "undefined") {
       REVIEWS.length = 0;
       reviews.reviews.forEach((r) => REVIEWS.push(r));
+      changed = true;
+    }
+    if (accessories && accessories.ok && Array.isArray(accessories.accessories) && typeof ACCESSORIES !== "undefined") {
+      ACCESSORIES.length = 0;
+      accessories.accessories.forEach((a) => ACCESSORIES.push(a));
       changed = true;
     }
 

@@ -6,13 +6,16 @@
 <title>Quản trị — TimXeDien.com</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
     --green:#10b981;--green-d:#0a8f5e;--ink:#0f172a;--deep:#0f172a;
     --mist:#f6f8f7;--line:#e6eae8;--mut:#6b7674;--red:#ef4444;--amber:#e08e00;
   }
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--mist);color:#3a4750;line-height:1.6;font-size:15px}
+  body{font-family:"Be Vietnam Pro",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--mist);color:#34444c;line-height:1.6;font-size:14px}
   a{color:inherit}
   button,input,select,textarea{font-family:inherit;font-size:14px}
   .wrap{max-width:1080px;margin:0 auto;padding:18px 16px 60px}
@@ -41,6 +44,12 @@
   .btn.danger{background:var(--red)}
   .btn.sm{padding:7px 12px;font-size:13px}
   .btn:disabled{opacity:.6;cursor:not-allowed}
+  .product-admin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .product-admin-card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .product-admin-card img{width:100%;height:150px;object-fit:contain;background:#f8faf9;border-bottom:1px solid var(--line);padding:10px}
+  .product-admin-body{padding:14px}.product-admin-body h3{font-size:14px;color:var(--ink);line-height:1.45;min-height:41px}.product-admin-body .price{color:var(--green-d);font-weight:800;margin:8px 0}
+  @media(max-width:980px){.product-admin-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.product-admin-grid{grid-template-columns:1fr}}
 
   /* Thẻ thống kê */
   .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:16px 0}
@@ -142,6 +151,7 @@
         <button data-tab="drivers">🧑‍✈️ Tài xế</button>
         <div class="nav-label">Nội dung website</div>
         <button data-tab="fleet">🚘 Đội xe</button>
+        <button data-tab="accessories">🧰 Phụ kiện</button>
         <button data-tab="faqs">❓ FAQ</button>
         <button data-tab="reviews">⭐ Đánh giá</button>
         <button data-tab="siteconfig">⚙️ Thông tin chung</button>
@@ -354,6 +364,40 @@
       <div id="fleetList"><div class="empty">Đang tải...</div></div>
     </div>
 
+    <!-- ===== TAB: Phụ kiện ===== -->
+    <div id="tab-accessories" style="display:none">
+      <div class="bar" style="justify-content:space-between">
+        <h2 style="margin:0">Sản phẩm phụ kiện — hiển thị tại trang Phụ kiện</h2>
+        <button class="btn ghost" id="reloadAccessories">↻ Tải lại</button>
+      </div>
+      <div class="guide" style="margin-bottom:16px">
+        Sản phẩm đang lưu trong hệ thống TimXeDien. Anh có thể đổi giá, hình ảnh, liên kết VinFast hoặc ẩn sản phẩm mà không cần triển khai lại website.
+      </div>
+      <div class="card">
+        <h2 style="margin-top:0" id="accessoryFormTitle">Thêm sản phẩm</h2>
+        <div class="bar">
+          <input class="inp" id="acId" placeholder="Mã sản phẩm (VD: ACS30000142)" style="min-width:230px">
+          <input class="inp" id="acName" placeholder="Tên sản phẩm" style="min-width:320px;flex:1">
+          <input class="inp" type="number" id="acPrice" placeholder="Giá niêm yết (đ)" style="min-width:180px">
+        </div>
+        <div class="bar">
+          <input class="inp" id="acImage" placeholder="Đường dẫn hoặc URL hình ảnh" style="min-width:100%">
+        </div>
+        <div class="bar">
+          <input class="inp" id="acUrl" placeholder="Liên kết sản phẩm chính hãng VinFast" style="min-width:100%">
+        </div>
+        <div class="bar">
+          <input class="inp" id="acSource" placeholder="Nguồn sản phẩm" value="VinFast" style="min-width:180px">
+          <label style="display:flex;align-items:center;gap:6px;font-weight:600;color:var(--mut)">
+            <input type="checkbox" id="acActive" checked> Hiển thị trên trang phụ kiện
+          </label>
+          <button class="btn" id="btnSaveAccessory">+ Thêm sản phẩm</button>
+          <button class="btn ghost" id="btnCancelAccessoryEdit" style="display:none">Huỷ sửa</button>
+        </div>
+      </div>
+      <div id="accessoryAdminList"><div class="empty">Đang tải...</div></div>
+    </div>
+
     <!-- ===== TAB: FAQ ===== -->
     <div id="tab-faqs" style="display:none">
       <div class="bar" style="justify-content:space-between">
@@ -475,11 +519,11 @@
 
   let KEY = sessionStorage.getItem("txd_admin_key") || "";
   let ORDERS = [], CONTRACTS = [], LEADS = [], USERS = [], VEHICLES = [], DRIVERS = [];
-  let CARS = [], FAQ_ITEMS = [], REVIEW_ITEMS = [], SITE_CONFIG = null;
+  let CARS = [], ACCESSORY_ITEMS = [], FAQ_ITEMS = [], REVIEW_ITEMS = [], SITE_CONFIG = null;
   let orderFilter = "all", contractFilter = "all", leadFilter = "all", vehicleFilter = "all";
   let currentAdminContract = { code: "", content: "", signature: "", signerName: "", signedAt: "", contentHash: "" };
   let editingVehicleId = null;
-  let editingFleetId = null, editingFaqId = null, editingReviewId = null;
+  let editingFleetId = null, editingAccessoryId = null, editingFaqId = null, editingReviewId = null;
 
   function banner(msg) {
     const b = $("#banner");
@@ -501,7 +545,7 @@
   async function loadAll(silent) {
     if (!silent) banner("");
     try {
-      const [o, ct, l, u, v, d, fl, fq, rv, cf] = await Promise.all([
+      const [o, ct, l, u, v, d, fl, ac, fq, rv, cf] = await Promise.all([
         api("/api/orders", "GET"),
         api("/api/contract", "GET"),
         api("/api/leads", "GET"),
@@ -509,6 +553,7 @@
         api("/api/vehicles", "GET"),
         api("/api/drivers", "GET"),
         api("/api/fleet", "GET"),
+        api("/api/content?type=accessories", "GET"),
         api("/api/content?type=faqs", "GET"),
         api("/api/content?type=reviews", "GET"),
         api("/api/content?type=config", "GET")
@@ -525,6 +570,7 @@
       VEHICLES = (v.data && v.data.vehicles) || [];
       DRIVERS = (d.data && d.data.drivers) || [];
       CARS = (fl.data && fl.data.cars) || [];
+      ACCESSORY_ITEMS = (ac.data && ac.data.accessories) || [];
       FAQ_ITEMS = (fq.data && fq.data.faqs) || [];
       REVIEW_ITEMS = (rv.data && rv.data.reviews) || [];
       SITE_CONFIG = (cf.data && cf.data.config) || null;
@@ -546,6 +592,7 @@
     renderVehicles();
     renderDrivers();
     renderFleetList();
+    renderAccessoryAdminList();
     renderFaqAdminList();
     renderReviewAdminList();
     fillConfigForm();
@@ -1271,6 +1318,95 @@
       btn.disabled = false;
       btn.textContent = editingFleetId ? "💾 Lưu thay đổi" : "+ Thêm xe";
     }
+  });
+
+  // ================= PHỤ KIỆN =================
+  function resetAccessoryForm() {
+    editingAccessoryId = null;
+    ["acId", "acName", "acPrice", "acImage", "acUrl"].forEach((id) => { $("#" + id).value = ""; });
+    $("#acSource").value = "VinFast";
+    $("#acActive").checked = true;
+    $("#acId").disabled = false;
+    $("#accessoryFormTitle").textContent = "Thêm sản phẩm";
+    $("#btnSaveAccessory").textContent = "+ Thêm sản phẩm";
+    $("#btnCancelAccessoryEdit").style.display = "none";
+  }
+
+  function startEditAccessory(id) {
+    const a = ACCESSORY_ITEMS.find((x) => x.id === id);
+    if (!a) return;
+    editingAccessoryId = id;
+    $("#acId").value = a.id || "";
+    $("#acId").disabled = true;
+    $("#acName").value = a.name || "";
+    $("#acPrice").value = a.price || "";
+    $("#acImage").value = a.img || "";
+    $("#acUrl").value = a.url || "";
+    $("#acSource").value = a.source || "VinFast";
+    $("#acActive").checked = a.active !== false;
+    $("#accessoryFormTitle").textContent = "Sửa sản phẩm: " + a.name;
+    $("#btnSaveAccessory").textContent = "💾 Lưu thay đổi";
+    $("#btnCancelAccessoryEdit").style.display = "";
+    $("#tab-accessories").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function renderAccessoryAdminList() {
+    if (!ACCESSORY_ITEMS.length) {
+      $("#accessoryAdminList").innerHTML = `<div class="empty">Chưa có dữ liệu phụ kiện. Hãy chạy phần accessory_products trong supabase-schema.sql, sau đó tải lại.</div>`;
+      return;
+    }
+    $("#accessoryAdminList").innerHTML = `<div class="product-admin-grid">${ACCESSORY_ITEMS.map((a) => `
+      <div class="product-admin-card">
+        <img src="${esc(a.img)}" alt="${esc(a.name)}">
+        <div class="product-admin-body">
+          <div class="top"><span class="code">${esc(a.id)}</span><span class="pill" style="background:${a.active ? "#15803d" : "#64748b"}">${a.active ? "ĐANG HIỆN" : "ĐANG ẨN"}</span></div>
+          <h3>${esc(a.name)}</h3>
+          <div class="price">${fmt(a.price)}</div>
+          <div class="acts">
+            <button class="btn sm ghost" data-acedit="${esc(a.id)}">✏️ Sửa</button>
+            <button class="btn sm" data-actoggle="${esc(a.id)}">${a.active ? "Ẩn" : "Hiện"}</button>
+            <a href="${esc(a.url)}" target="_blank" rel="noopener">Xem ↗</a>
+            <button class="btn sm danger" data-acdel="${esc(a.id)}">Xóa</button>
+          </div>
+        </div>
+      </div>`).join("")}</div>`;
+
+    $$("#accessoryAdminList [data-acedit]").forEach((b) => b.addEventListener("click", () => startEditAccessory(b.dataset.acedit)));
+    $$("#accessoryAdminList [data-actoggle]").forEach((b) => b.addEventListener("click", async () => {
+      const a = ACCESSORY_ITEMS.find((x) => x.id === b.dataset.actoggle);
+      if (!a) return;
+      await api("/api/content", "POST", { type: "accessories", action: "update", id: a.id, active: !a.active });
+      await loadAll(true);
+    }));
+    $$("#accessoryAdminList [data-acdel]").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm("Xóa sản phẩm này khỏi hệ thống? Không thể hoàn tác.")) return;
+      const id = b.dataset.acdel;
+      const r = await api("/api/content", "POST", { type: "accessories", action: "delete", id });
+      if (!r.ok) { alert((r.data && r.data.error) || "Không xóa được sản phẩm."); return; }
+      if (editingAccessoryId === id) resetAccessoryForm();
+      await loadAll(true);
+    }));
+  }
+
+  $("#reloadAccessories").addEventListener("click", () => loadAll());
+  $("#btnCancelAccessoryEdit").addEventListener("click", resetAccessoryForm);
+  $("#btnSaveAccessory").addEventListener("click", async () => {
+    const id = $("#acId").value.trim(), name = $("#acName").value.trim();
+    const img = $("#acImage").value.trim(), url = $("#acUrl").value.trim();
+    if (!id || !name || !img || !url) { alert("Vui lòng nhập đủ mã, tên, ảnh và liên kết sản phẩm."); return; }
+    const btn = $("#btnSaveAccessory");
+    btn.disabled = true; btn.textContent = "Đang lưu...";
+    const payload = {
+      type: "accessories", id, name, img, url,
+      price: Number($("#acPrice").value) || 0,
+      source: $("#acSource").value.trim() || "VinFast",
+      active: $("#acActive").checked
+    };
+    const r = await api("/api/content", "POST", Object.assign({ action: editingAccessoryId ? "update" : "add" }, payload));
+    btn.disabled = false;
+    if (!r.ok) { alert((r.data && r.data.error) || "Không lưu được sản phẩm."); btn.textContent = editingAccessoryId ? "💾 Lưu thay đổi" : "+ Thêm sản phẩm"; return; }
+    resetAccessoryForm();
+    await loadAll(true);
   });
 
   // ================= FAQ =================

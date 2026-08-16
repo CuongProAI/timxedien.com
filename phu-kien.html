@@ -128,7 +128,19 @@
   "use strict";
   const { $, $$, observeReveal } = TXDPage;
 
-  $("#accGrid").innerHTML = ACCESSORIES.map((a) => `
+  function productPrice(a) {
+    if (typeof a.price === "number") return a.price.toLocaleString("vi-VN") + " VNĐ";
+    return String(a.price || "Liên hệ");
+  }
+
+  function renderAccessories() {
+    if (!ACCESSORIES.length) {
+      $("#accGrid").innerHTML = '<div class="empty" style="grid-column:1/-1">Hiện chưa có sản phẩm phụ kiện đang hiển thị.</div>';
+      const count = $(".official-count");
+      if (count) count.textContent = "0 sản phẩm";
+      return;
+    }
+    $("#accGrid").innerHTML = ACCESSORIES.map((a) => `
       <article class="acc-card reveal visible">
         <div class="acc-media">
           <img src="${a.img}" alt="${a.name} chính hãng VinFast" loading="lazy">
@@ -137,11 +149,16 @@
         <div class="acc-card-body">
           <div class="acc-code">Mã sản phẩm: ${a.id}</div>
           <h3>${a.name}</h3>
-          <div class="price"><small>Giá niêm yết</small>${a.price}</div>
+          <div class="price"><small>Giá niêm yết</small>${productPrice(a)}</div>
           <a class="official-product-link" href="${a.url}" target="_blank" rel="noopener">Xem tại VinFast <span>↗</span></a>
         </div>
       </article>`).join("");
+    const count = $(".official-count");
+    if (count) count.textContent = ACCESSORIES.length + " sản phẩm";
+  }
 
+  renderAccessories();
+  document.addEventListener("txd:live-data-ready", renderAccessories);
   $$(".reveal").forEach(observeReveal);
 })();
 </script>

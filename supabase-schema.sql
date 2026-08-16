@@ -181,6 +181,38 @@ create table if not exists reviews (
 );
 create index if not exists reviews_active_idx on reviews (active, sort_order);
 
+-- Phụ kiện hiển thị ở trang phu-kien.html và quản lý từ Admin
+create table if not exists accessory_products (
+  id text primary key,             -- mã sản phẩm chính hãng
+  name text not null,
+  price bigint default 0,
+  image_url text not null,
+  product_url text not null,
+  source text default 'VinFast',
+  sort_order int default 0,
+  active boolean default true,
+  created_at timestamptz default now(),
+  updated_at timestamptz
+);
+create index if not exists accessory_products_active_idx on accessory_products (active, sort_order);
+
+-- Dữ liệu chính hãng đối chiếu từ VinFast Shop ngày 16/08/2026.
+-- on conflict giúp chạy lại migration an toàn và không ghi đè nội dung Admin đã sửa.
+insert into accessory_products (id, name, price, image_url, product_url, source, sort_order, active) values
+  ('VINFASTVF3SCALECARMODELS', 'Mô Hình Xe VinFast VF 3', 2026895, 'images/accessories/vf3-model.png', 'https://shop.vinfastauto.com/vn_vi/VINFASTVF3SCALECARMODELS.html', 'VinFast', 1, true),
+  ('3DTRUNKMATVF6', 'Thảm Cốp 3D VF 6', 712581, 'images/accessories/vf6-trunk-mat.png', 'https://shop.vinfastauto.com/vn_vi/3DTRUNKMATVF6.html', 'VinFast', 2, true),
+  ('EEP70051005', 'VF 6 Tấm Che Pin Cao Áp', 6878002, 'images/accessories/vf6-battery-cover.png', 'https://shop.vinfastauto.com/vn_vi/EEP70051005.html', 'VinFast', 3, true),
+  ('VF3ROOFRACKCROSSBAR', 'Bộ Thanh Ngang Giá Nóc VF 3', 1436000, 'images/accessories/vf3-roof-rack.png', 'https://shop.vinfastauto.com/vn_vi/VF3ROOFRACKCROSSBAR.html', 'VinFast', 4, true),
+  ('EEP31001000', 'VF 8 Tấm Che Pin Cao Áp', 8140001, 'images/accessories/vf8-battery-cover.png', 'https://shop.vinfastauto.com/vn_vi/EEP31001000.html', 'VinFast', 5, true),
+  ('EEP73111000AA', 'VF 5 Tấm Che Pin Cao Áp', 4947002, 'images/accessories/vf5-battery-cover.png', 'https://shop.vinfastauto.com/vn_vi/EEP73111000AA.html', 'VinFast', 6, true),
+  ('NERIOGREENBATTERYCOVER', 'Tấm Che Pin Cao Áp VinFast Nerio Green', 5818527, 'images/accessories/nerio-battery-cover.png', 'https://shop.vinfastauto.com/vn_vi/NERIOGREENBATTERYCOVER.html', 'VinFast', 7, true),
+  ('EEP71061000', 'VF 7 Tấm Che Pin Cao Áp', 6881001, 'images/accessories/vf7-battery-cover.png', 'https://shop.vinfastauto.com/vn_vi/EEP71061000.html', 'VinFast', 8, true),
+  ('EEP80001000', 'VF 9 Tấm Che Pin Cao Áp', 8998001, 'images/accessories/vf9-battery-cover.png', 'https://shop.vinfastauto.com/vn_vi/EEP80001000.html', 'VinFast', 9, true),
+  ('INSULATIONFILMVF3', 'Gói Dán Film Cách Nhiệt VinFast VF 3', 4932062, 'images/accessories/vf3-insulation-film.png', 'https://shop.vinfastauto.com/vn_vi/INSULATIONFILMVF3.html', 'VinFast', 10, true),
+  ('INSULATIONFILMCEILINGVF7', 'Gói Film Cách Nhiệt Dán Trần VinFast VF 7', 5724596, 'images/accessories/vf7-roof-film.png', 'https://shop.vinfastauto.com/vn_vi/INSULATIONFILMCEILINGVF7.html', 'VinFast', 11, true),
+  ('ACS30000142', 'Thanh Ngang Giá Nóc VinFast VF 8', 18360000, 'images/accessories/vf8-roof-rack.png', 'https://shop.vinfastauto.com/vn_vi/ACS30000142.html', 'VinFast', 12, true)
+on conflict (id) do nothing;
+
 -- Khoá truy cập trực tiếp qua API công khai của Supabase — chỉ server
 -- (dùng service_role key) mới đọc/ghi được, trình duyệt không đụng được vào.
 alter table orders enable row level security;
@@ -193,3 +225,4 @@ alter table site_config enable row level security;
 alter table fleet_cars enable row level security;
 alter table faqs enable row level security;
 alter table reviews enable row level security;
+alter table accessory_products enable row level security;
