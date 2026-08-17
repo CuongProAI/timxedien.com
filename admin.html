@@ -1609,7 +1609,7 @@
 
   // ================= TAB & ĐĂNG NHẬP =================
   function showTab(name) {
-    ["dash", "orders", "contracts", "leads", "users", "vehicles", "drivers", "fleet", "faqs", "reviews", "siteconfig"].forEach((t) => { $("#tab-" + t).style.display = t === name ? "" : "none"; });
+    ["dash", "orders", "contracts", "leads", "users", "vehicles", "drivers", "fleet", "accessories", "faqs", "reviews", "siteconfig"].forEach((t) => { $("#tab-" + t).style.display = t === name ? "" : "none"; });
     $$("#tabs [data-tab]").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
   }
   $$("#tabs [data-tab]").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
