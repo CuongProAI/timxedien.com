@@ -68,7 +68,7 @@
       <span class="official-count">12 sản phẩm</span>
     </div>
     <div class="acc-grid" id="accGrid"><!-- JS render --></div>
-    <p class="official-price-note">Giá có thể được VinFast điều chỉnh. Nhấn “Xem tại VinFast” để kiểm tra thông tin và tình trạng sản phẩm mới nhất trước khi mua.</p>
+    <p class="official-price-note">Giá có thể được điều chỉnh theo từng thời điểm. Nhấn “Xem thêm” để xem thông tin ngay trên TimXeDien và liên hệ tư vấn.</p>
   </div>
 </section>
 
@@ -108,6 +108,32 @@
     </div>
   </div>
 </footer>
+
+<!-- ===== Chi tiết sản phẩm ===== -->
+<div class="modal-backdrop product-detail-backdrop" id="productDetailModal">
+  <div class="modal product-detail-modal">
+    <button class="modal-close product-detail-close" data-close aria-label="Đóng">✕</button>
+    <div class="product-detail-grid">
+      <div class="product-detail-media"><img id="detailImage" alt=""></div>
+      <div class="product-detail-content">
+        <span class="official-label">Phụ kiện chính hãng VinFast</span>
+        <div class="acc-code" id="detailCode"></div>
+        <h2 id="detailName"></h2>
+        <div class="product-detail-price"><small>Giá niêm yết</small><b id="detailPrice"></b></div>
+        <p>Sản phẩm được TimXeDien cập nhật từ danh mục phụ kiện chính hãng. Vui lòng liên hệ để kiểm tra khả năng tương thích với dòng xe, tình trạng hàng và phương án lắp đặt tại Cần Thơ.</p>
+        <div class="product-detail-points">
+          <span>✓ Thông tin nguồn chính hãng</span>
+          <span>✓ Tư vấn đúng dòng xe</span>
+          <span>✓ Hỗ trợ khách hàng tại Cần Thơ</span>
+        </div>
+        <div class="product-detail-actions">
+          <a class="btn btn-primary" href="tel:0939099018" data-cfg="telLink6">📞 Gọi tư vấn</a>
+          <a class="btn btn-outline" href="https://zalo.me/0939099018" target="_blank" rel="noopener" data-cfg="zaloLink4">Nhắn Zalo</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ===== Nút nổi + toast ===== -->
 <div class="floats">
@@ -150,11 +176,21 @@
           <div class="acc-code">Mã sản phẩm: ${a.id}</div>
           <h3>${a.name}</h3>
           <div class="price"><small>Giá niêm yết</small>${productPrice(a)}</div>
-          <a class="official-product-link" href="${a.url}" target="_blank" rel="noopener">Xem tại VinFast <span>↗</span></a>
+          <button class="official-product-link" type="button" data-detail="${a.id}">Xem thêm <span>→</span></button>
         </div>
       </article>`).join("");
     const count = $(".official-count");
     if (count) count.textContent = ACCESSORIES.length + " sản phẩm";
+    $$("#accGrid [data-detail]").forEach((button) => button.addEventListener("click", () => {
+      const product = ACCESSORIES.find((item) => item.id === button.dataset.detail);
+      if (!product) return;
+      $("#detailImage").src = product.img;
+      $("#detailImage").alt = product.name;
+      $("#detailCode").textContent = "Mã sản phẩm: " + product.id;
+      $("#detailName").textContent = product.name;
+      $("#detailPrice").textContent = productPrice(product);
+      TXDPage.openModal("#productDetailModal");
+    }));
   }
 
   renderAccessories();
