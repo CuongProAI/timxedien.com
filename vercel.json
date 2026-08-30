@@ -1,4 +1,8 @@
 {
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/xe-cu", "destination": "/", "permanent": true },
+    { "source": "/phu-kien", "destination": "/", "permanent": true }
+  ]
 }
