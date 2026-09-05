@@ -50,3 +50,7 @@ body{font-size:15px;line-height:1.55}.vh-logo small{font-size:9px}.vh-header nav
 footer .vh-logo>span{background-image:url("../images/timxedien-mark.svg")}
 @media(max-width:950px){.vh-header nav{background:#061b27;border-bottom:1px solid rgba(107,235,211,.14)}.vh-header nav a{color:#bed1ce;border-bottom:1px solid rgba(255,255,255,.065)}.vh-header nav a[aria-current="page"]{border-bottom-color:transparent}}
 @media(max-width:600px){.vh-logo>span{width:42px;height:42px}.vh-logo b{font-size:18px}}
+
+/* Một chuẩn chữ duy nhất cho menu */
+.vh-header nav a{font-family:"Be Vietnam Pro",sans-serif;font-size:13px;font-weight:600;line-height:1.2;letter-spacing:0;text-transform:none}.vh-logo{font-family:"Be Vietnam Pro",sans-serif}.vh-logo>span{border-radius:14px;box-shadow:0 7px 20px rgba(11,189,157,.17)}
+@media(max-width:950px){.vh-header nav a{font-size:15px;font-weight:600}}
